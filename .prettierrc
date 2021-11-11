@@ -1,0 +1,9 @@
+{
+    "singleQuote": false,
+    "tabWidth": 4,
+    "trailingComma": "es5",
+    "semi": true,
+    "printWidth": 120,
+    "importOrder": ["^@/(.*)$", "^(src|public)/(.*)$", "^[./]"],
+    "importOrderSeparation": true
+}

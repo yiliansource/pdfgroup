@@ -1,0 +1,43 @@
+{
+    "name": "pdfgroup",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start",
+        "lint": "next lint"
+    },
+    "dependencies": {
+        "@emotion/cache": "^11.4.0",
+        "@emotion/react": "^11.5.0",
+        "@emotion/server": "^11.4.0",
+        "@emotion/styled": "^11.3.0",
+        "@mui/icons-material": "^5.0.4",
+        "@mui/material": "^5.0.2",
+        "clsx": "^1.1.1",
+        "file-saver": "^2.0.5",
+        "immutability-helper": "^3.1.1",
+        "jszip": "^3.7.1",
+        "next": "12.0.0",
+        "pdf-lib": "^1.17.0",
+        "pdfjs-dist": "^2.10.377",
+        "react": "17.0.2",
+        "react-dnd": "^14.0.4",
+        "react-dnd-html5-backend": "^14.0.2",
+        "react-dom": "17.0.2",
+        "uuid": "^8.3.2"
+    },
+    "devDependencies": {
+        "@trivago/prettier-plugin-sort-imports": "^2.0.4",
+        "@types/file-saver": "^2.0.3",
+        "@types/node": "16.11.6",
+        "@types/react": "17.0.33",
+        "@types/uuid": "^8.3.1",
+        "babel-plugin-styled-components": "^1.13.2",
+        "eslint": "7",
+        "eslint-config-next": "12.0.0",
+        "prettier": "^2.4.1",
+        "typescript": "4.4.4"
+    }
+}
