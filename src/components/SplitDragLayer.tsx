@@ -1,3 +1,4 @@
+import { Card } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useDragLayer, XYCoord } from "react-dnd";
 
@@ -42,8 +43,10 @@ function renderItem(type: DragItemTypes, item: SplitPage) {
     switch (type) {
         case DragItemTypes.PAGE:
             return (
-                <Box sx={{ position: "absolute", transform: "scale(0.9) rotate(7deg)" }}>
-                    <SplitPagePreview page={item} />
+                <Box sx={{ position: "absolute", transform: "scale(1) rotate(7deg)" }}>
+                    <Card elevation={4} sx={{ height: 180 }}>
+                        <SplitPagePreview page={item} />
+                    </Card>
                 </Box>
             );
     }

@@ -1,9 +1,14 @@
 import { saveAs } from "file-saver";
 import JSZip from "jszip";
-import { PDFDocument, PDFPage } from "pdf-lib";
+import { PDFDocument } from "pdf-lib";
 import { v4 as uuidv4 } from "uuid";
 
 import { IPdfLibConvertable, PdfSource } from "./file";
+import { PDFPipeMethod } from "./pipes/types";
+
+export interface SaveOptions {
+    pipes: PDFPipeMethod[];
+}
 
 export enum DragItemTypes {
     PAGE = "page",
@@ -12,12 +17,24 @@ export enum DragItemTypes {
 export class SplitEnvironment {
     constructor(public label: string, public groups: SplitGroup[]) {}
 
-    public async save(): Promise<void> {
+    public async save(options?: SaveOptions): Promise<void> {
+        options = Object.assign(
+            {},
+            {
+                pipes: [],
+            } as SaveOptions,
+            options
+        ) as Required<SaveOptions>;
+
         const zip = new JSZip();
 
         for (const group of this.groups) {
             const doc = await group.toPdflibDocument();
-            const bytes = await doc.save();
+            const piped = await options.pipes.reduce(
+                async (piping, pipe) => await pipe(await piping),
+                Promise.resolve(doc)
+            );
+            const bytes = await piped.save();
             zip.file(group.label + ".pdf", bytes);
         }
 

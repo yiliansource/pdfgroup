@@ -45,12 +45,14 @@ export function SplitPageItem({ page, pageIndex, groupIndex }: SplitPageViewProp
         <Root>
             <Card ref={drag} sx={{ opacity: isDragging ? 0.5 : 1 }}>
                 <SplitPagePreview page={page} />
+                {/* <PageNumber>{page.page}</PageNumber> */}
             </Card>
         </Root>
     );
 }
 
 const Root = styled("div")({
+    position: "relative",
     padding: "0px",
     display: "flex",
     justifyContent: "center",
@@ -62,4 +64,20 @@ const Root = styled("div")({
         width: 127,
         overflow: "hidden",
     },
+});
+
+const PageNumber = styled("div")({
+    position: "absolute",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 12,
+    bottom: 0,
+    right: 0,
+    margin: 4,
+    background: "#fff",
+    border: "1px solid #ccc",
+    borderRadius: "50%",
+    height: "22px",
+    width: "22px",
 });
