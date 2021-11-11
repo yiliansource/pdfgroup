@@ -6,8 +6,8 @@ import { useDrop } from "react-dnd";
 import { PageDragInformation } from "src/lib/drag";
 import { DragItemTypes, SplitPage } from "src/lib/pdf/splitter";
 
+import { SplitPageItem } from "./SplitPageItem";
 import { SplitPagePlaceholder } from "./SplitPagePlaceholder";
-import { SplitPageView } from "./SplitPageView";
 
 export interface SplitPageListProps {
     pages: SplitPage[];
@@ -36,11 +36,12 @@ export function SplitPageList({ pages, groupIndex, movePage }: SplitPageListProp
             },
             hover: (item: PageDragInformation, monitor) => {
                 // placeholder index is calculated as a combination of the horizontal offset, page width and spacing
+                if (!listRef.current) throw new Error("No reference to the page list was created.");
 
-                const x = monitor.getClientOffset()!.x;
-                const offset = listRef.current!.offsetLeft;
+                const p =
+                    monitor.getClientOffset()!.x -
+                    (listRef.current.offsetLeft - listRef.current.parentElement!.scrollLeft);
 
-                const p = x - offset;
                 let i = Math.ceil((p - PAGE_WIDTH) / (PAGE_WIDTH + PAGE_SPACING));
 
                 // clamp the index to the array
@@ -73,7 +74,7 @@ export function SplitPageList({ pages, groupIndex, movePage }: SplitPageListProp
             }
         }
 
-        pageList.push(<SplitPageView key={page.id} page={page} groupIndex={groupIndex} pageIndex={index} />);
+        pageList.push(<SplitPageItem key={page.id} page={page} groupIndex={groupIndex} pageIndex={index} />);
     });
 
     if (isOver && canDrop && dropIndex >= pages.length) {
@@ -97,6 +98,6 @@ function getPlaceholder() {
 }
 
 const Root = styled("div")({
-    minHeight: "200px",
-    minWidth: "200px",
+    minHeight: "210px",
+    overflowX: "auto",
 });

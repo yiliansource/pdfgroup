@@ -14,7 +14,9 @@
         "@emotion/server": "^11.4.0",
         "@emotion/styled": "^11.3.0",
         "@mui/icons-material": "^5.0.4",
+        "@mui/lab": "^5.0.0-alpha.54",
         "@mui/material": "^5.0.2",
+        "add": "^2.0.6",
         "clsx": "^1.1.1",
         "file-saver": "^2.0.5",
         "immutability-helper": "^3.1.1",
@@ -25,8 +27,10 @@
         "react": "17.0.2",
         "react-dnd": "^14.0.4",
         "react-dnd-html5-backend": "^14.0.2",
+        "react-dnd-touch-backend": "^14.1.1",
         "react-dom": "17.0.2",
-        "uuid": "^8.3.2"
+        "uuid": "^8.3.2",
+        "yarn": "^1.22.17"
     },
     "devDependencies": {
         "@trivago/prettier-plugin-sort-imports": "^2.0.4",
