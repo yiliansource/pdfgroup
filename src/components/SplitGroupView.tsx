@@ -22,7 +22,7 @@ import {
 import { Box, styled } from "@mui/system";
 import React, { useState } from "react";
 
-import { SplitGroup } from "src/lib/pdf/splitter";
+import { PageLocation, SplitGroup } from "src/lib/pdf/splitter";
 
 import { SplitPageList } from "./SplitPageList";
 
@@ -31,7 +31,7 @@ export interface SplitGroupViewProps {
     groupIndex: number;
     totalGroups: number;
 
-    movePage(oldGroupIndex: number, oldPageIndex: number, newGroupIndex: number, newPageIndex: number): void;
+    movePage(source: PageLocation, dest: PageLocation): void;
     moveGroup(oldGroupIndex: number, newGroupIndex: number): void;
     removeGroup(groupIndex: number): void;
     renameGroup(groupIndex: number, label: string): void;

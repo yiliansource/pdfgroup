@@ -3,11 +3,12 @@ import { Card, IconButton, Stack, Tooltip } from "@mui/material";
 import { styled } from "@mui/system";
 import { useDrop } from "react-dnd";
 
+import { PageLocation } from "src/lib/pdf/splitter";
+
 import { DragItemTypes, PageDragInformation } from "../lib/drag";
-import { PageLocation } from "./SplitApp";
 
 export interface SplitGroupAdderProps {
-    addGroup(...pages: PageLocation[]): void;
+    addGroup(initial?: PageLocation): void;
 }
 
 export function SplitGroupAdder({ addGroup }: SplitGroupAdderProps) {
@@ -15,7 +16,7 @@ export function SplitGroupAdder({ addGroup }: SplitGroupAdderProps) {
         () => ({
             accept: DragItemTypes.PAGE,
             drop: (item: PageDragInformation) => {
-                addGroup([item.groupIndex, item.pageIndex]);
+                addGroup(item.location);
             },
             collect: (monitor) => ({
                 isDropping: !!monitor.isOver() && !!monitor.canDrop(),

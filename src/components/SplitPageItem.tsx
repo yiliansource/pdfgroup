@@ -22,8 +22,10 @@ export function SplitPageItem({ page, pageIndex, groupIndex }: SplitPageViewProp
             item: (): PageDragInformation => {
                 return {
                     id: page.id,
-                    groupIndex: groupIndex,
-                    pageIndex: pageIndex,
+                    location: {
+                        group: groupIndex,
+                        page: pageIndex,
+                    },
                     page: page,
                 };
             },

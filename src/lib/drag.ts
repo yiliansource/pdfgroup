@@ -1,9 +1,8 @@
-import { SplitPage } from "./pdf/splitter";
+import { PageLocation, SplitPage } from "./pdf/splitter";
 
 export interface PageDragInformation {
     id: string;
-    groupIndex: number;
-    pageIndex: number;
+    location: PageLocation;
     page: SplitPage;
 }
 

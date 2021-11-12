@@ -1,7 +1,6 @@
 import DownloadIcon from "@mui/icons-material/Download";
 import { LoadingButton } from "@mui/lab";
 import {
-    Button,
     Collapse,
     FormControl,
     FormControlLabel,
@@ -12,6 +11,7 @@ import {
     Tooltip,
 } from "@mui/material";
 import { Box } from "@mui/system";
+import update from "immutability-helper";
 import { useEffect, useMemo, useState } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -23,10 +23,10 @@ import { removeExtension } from "src/lib/io/ext";
 import { PdfSource } from "src/lib/pdf/file";
 import { flattenDocument } from "src/lib/pdf/pipes/flattener";
 import { PDFPipeMethod } from "src/lib/pdf/pipes/types";
-import { SplitEnvironment, SplitGroup, SplitPage } from "src/lib/pdf/splitter";
+import { PageLocation, SplitEnvironment, SplitGroup, SplitPage } from "src/lib/pdf/splitter";
 import { isTouch } from "src/lib/supports";
-import { useForceUpdate } from "src/lib/useForceUpdate";
 
+import { JsonView } from "./JsonView";
 import { SplitDragLayer } from "./SplitDragLayer";
 import { SplitGroupAdder } from "./SplitGroupAdder";
 import { SplitGroupView } from "./SplitGroupView";
@@ -35,14 +35,10 @@ export interface SplitterAppProps {
     source: PdfSource;
 }
 
-export type PageLocation = [groupIndex: number, pageIndex: number];
-
 export function SplitApp({ source }: SplitterAppProps) {
     const [environment, setEnvironment] = useState<SplitEnvironment | null>(null);
     const [downloading, setDownloading] = useState(false);
     const [flatten, setFlatten] = useState(false);
-
-    const forceUpdate = useForceUpdate();
 
     useEffect(() => {
         if (!source) return;
@@ -68,55 +64,99 @@ export function SplitApp({ source }: SplitterAppProps) {
 
     if (!environment) return null;
 
-    // TODO: Rewrite as immutable updates?
-
     const renameEnvironment = (label: string) => {
-        environment.label = label;
-
-        forceUpdate();
+        setEnvironment((e) =>
+            update(e, {
+                label: { $set: label },
+            })
+        );
     };
-    const movePage = (oldGroupIndex: number, oldPageIndex: number, newGroupIndex: number, newPageIndex: number) => {
-        if (oldGroupIndex === newGroupIndex && oldPageIndex === newPageIndex) return;
+    const movePage = (source: PageLocation, dest: PageLocation) => {
+        if (source.group === dest.group && source.page === dest.page) return;
 
-        const [page] = environment.groups[oldGroupIndex].pages.splice(oldPageIndex, 1);
-        environment.groups[newGroupIndex].pages.splice(newPageIndex, 0, page);
+        setEnvironment((e) => {
+            const page = e!.getPage(source);
+            return source.group === dest.group
+                ? update(e, {
+                      groups: {
+                          [dest.group]: {
+                              pages: {
+                                  $splice: [
+                                      [source.page, 1],
+                                      [dest.page, 0, page],
+                                  ],
+                              },
+                          },
+                      },
+                  })
+                : update(e, {
+                      groups: {
+                          [source.group]: { pages: { $splice: [[source.page, 1]] } },
+                          [dest.group]: { pages: { $splice: [[dest.page, 0, page]] } },
+                      },
+                  });
+        });
 
-        forceUpdate();
-
-        console.log(`Moved page from [${oldGroupIndex}, ${oldPageIndex}] to [${newGroupIndex}, ${newPageIndex}].`);
+        console.log(`Moved page from [${source.group}, ${source.page}] to [${dest.group}, ${dest.page}].`);
     };
-    const moveGroup = (oldGroupIndex: number, newGroupIndex: number) => {
-        if (oldGroupIndex === newGroupIndex) return;
+    const moveGroup = (sourceIndex: number, destIndex: number) => {
+        if (sourceIndex === destIndex) return;
 
-        const [group] = environment.groups.splice(oldGroupIndex, 1);
-        environment.groups.splice(newGroupIndex, 0, group);
+        setEnvironment((e) => {
+            const group = environment.groups[sourceIndex];
+            return update(e, {
+                groups: {
+                    $splice: [
+                        [sourceIndex, 1],
+                        [destIndex, 0, group],
+                    ],
+                },
+            });
+        });
 
-        forceUpdate();
-
-        console.log(`Moved group from ${oldGroupIndex} to ${newGroupIndex}.`);
+        console.log(`Moved group from ${sourceIndex} to ${destIndex}.`);
     };
-    const addGroup = (...pages: PageLocation[]) => {
-        const groupPages: SplitPage[] = [];
-        for (const page of pages) {
-            const [groupIndex, pageIndex] = page;
-            groupPages.push(...environment.groups[groupIndex].pages.splice(pageIndex, 1));
-        }
+    const addGroup = (initial?: PageLocation) => {
+        setEnvironment((e) => {
+            if (initial) {
+                const page = e!.getPage(initial);
 
-        environment.groups.push(new SplitGroup("test", groupPages));
+                return update(e, {
+                    groups: {
+                        [initial.group]: { pages: { $splice: [[initial.page, 1]] } },
+                        $push: [new SplitGroup("", [page])],
+                    },
+                });
+            } else {
+                return update(e, {
+                    groups: {
+                        $push: [new SplitGroup("")],
+                    },
+                });
+            }
+        });
 
-        forceUpdate();
-
-        console.log(`Added a new group with ${pages.length} page(s).`);
+        console.log(`Added a new group.`);
     };
     const renameGroup = (groupIndex: number, label: string) => {
-        environment.groups[groupIndex].label = label;
-
-        forceUpdate();
+        setEnvironment((e) =>
+            update(e, {
+                groups: {
+                    [groupIndex]: {
+                        label: { $set: label },
+                    },
+                },
+            })
+        );
     };
     const removeGroup = (groupIndex: number) => {
-        environment.groups.splice(groupIndex, 1);
-
-        forceUpdate();
+        setEnvironment((e) =>
+            update(e, {
+                groups: {
+                    $splice: [[groupIndex, 1]],
+                },
+            })
+        );
 
         console.log(`Removed group ${groupIndex}.`);
     };
@@ -185,7 +225,7 @@ export function SplitApp({ source }: SplitterAppProps) {
 
                 <SplitGroupAdder addGroup={addGroup} />
 
-                {/* <JSONView data={environment} filter={["id", "label", "groups", "pages", "page", "name", "source"]} /> */}
+                {/* <JsonView data={environment} filter={["id", "label", "groups", "pages", "page", "name", "source"]} /> */}
             </Box>
         </DndProvider>
     );

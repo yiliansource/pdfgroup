@@ -10,6 +10,8 @@ export interface SaveOptions {
     pipes: PDFPipeMethod[];
 }
 
+export type PageLocation = { group: number; page: number };
+
 export class SplitEnvironment {
     constructor(public label: string, public groups: SplitGroup[]) {}
 
@@ -39,6 +41,10 @@ export class SplitEnvironment {
 
         const content = await zip.generateAsync({ type: "blob" });
         saveAs(content, this.label + ".zip");
+    }
+
+    public getPage(location: PageLocation): SplitPage {
+        return this.groups[location.group].pages[location.page];
     }
 }
 

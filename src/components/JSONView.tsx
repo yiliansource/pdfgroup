@@ -1,10 +1,10 @@
-export interface JSONViewProps<T = any> {
+export interface JsonViewProps<T = any> {
     data: T;
     spaces?: number;
     filter?: string[];
 }
 
-export function JSONView({ data, spaces = 2, filter }: JSONViewProps) {
+export function JsonView({ data, spaces = 2, filter }: JsonViewProps) {
     return (
         <pre>
             <code>{JSON.stringify(data, filter, spaces)}</code>

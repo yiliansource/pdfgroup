@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useDrop } from "react-dnd";
 
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
-import { SplitPage } from "src/lib/pdf/splitter";
+import { PageLocation, SplitPage } from "src/lib/pdf/splitter";
 
 import { SplitPageItem } from "./SplitPageItem";
 import { SplitPagePlaceholder } from "./SplitPagePlaceholder";
@@ -13,7 +13,7 @@ export interface SplitPageListProps {
     pages: SplitPage[];
     groupIndex: number;
 
-    movePage(oldGroupIndex: number, oldPageIndex: number, newGroupIndex: number, newPageIndex: number): void;
+    movePage(source: PageLocation, dest: PageLocation): void;
 }
 
 const PAGE_WIDTH = 127,
@@ -30,9 +30,12 @@ export function SplitPageList({ pages, groupIndex, movePage }: SplitPageListProp
                 // we dont render adjacent placeholders, so we need to adjust the drop index, if it's greater
                 // than the actual page index, but only if the item is in the same group.
                 let adjustedDropIndex = dropIndex;
-                if (item.groupIndex === groupIndex && item.pageIndex < dropIndex) adjustedDropIndex--;
+                if (item.location.group === groupIndex && item.location.page < dropIndex) adjustedDropIndex--;
 
-                movePage(item.groupIndex, item.pageIndex, groupIndex, adjustedDropIndex);
+                movePage(item.location, {
+                    group: groupIndex,
+                    page: adjustedDropIndex,
+                });
             },
             hover: (item: PageDragInformation, monitor) => {
                 // placeholder index is calculated as a combination of the horizontal offset, page width and spacing
@@ -66,8 +69,8 @@ export function SplitPageList({ pages, groupIndex, movePage }: SplitPageListProp
                 // don't render adjacent placeholders
                 if (
                     !item ||
-                    item.groupIndex !== groupIndex ||
-                    !(item.pageIndex === dropIndex || item.pageIndex === dropIndex - 1)
+                    item.location.group !== groupIndex ||
+                    !(item.location.page === dropIndex || item.location.page === dropIndex - 1)
                 ) {
                     pageList.push(getPlaceholder());
                 }
@@ -79,7 +82,7 @@ export function SplitPageList({ pages, groupIndex, movePage }: SplitPageListProp
 
     if (isOver && canDrop && dropIndex >= pages.length) {
         // since we do not render adjacent placeholders, we check if the last item of the group is the dragged one.
-        if (!item || item.groupIndex !== groupIndex || item.pageIndex !== pages.length - 1) {
+        if (!item || item.location.group !== groupIndex || item.location.page !== pages.length - 1) {
             pageList.push(getPlaceholder());
         }
     }
