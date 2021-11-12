@@ -1,6 +1,8 @@
 import DownloadIcon from "@mui/icons-material/Download";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 import { LoadingButton } from "@mui/lab";
 import {
+    Button,
     Collapse,
     FormControl,
     FormControlLabel,
@@ -12,10 +14,7 @@ import {
 } from "@mui/material";
 import { Box } from "@mui/system";
 import update from "immutability-helper";
-import { useEffect, useMemo, useState } from "react";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { TouchBackend } from "react-dnd-touch-backend";
+import { useEffect, useState } from "react";
 import { TransitionGroup } from "react-transition-group";
 
 import { range } from "src/lib/collections";
@@ -24,12 +23,11 @@ import { PdfSource } from "src/lib/pdf/file";
 import { flattenDocument } from "src/lib/pdf/pipes/flattener";
 import { PDFPipeMethod } from "src/lib/pdf/pipes/types";
 import { PageLocation, SplitEnvironment, SplitGroup, SplitPage } from "src/lib/pdf/splitter";
-import { isTouch } from "src/lib/supports";
 
-import { JsonView } from "./JsonView";
 import { SplitDragLayer } from "./SplitDragLayer";
 import { SplitGroupAdder } from "./SplitGroupAdder";
 import { SplitGroupView } from "./SplitGroupView";
+import { JsonView } from "./files/JsonView";
 
 export interface SplitterAppProps {
     source: PdfSource;
@@ -59,8 +57,6 @@ export function SplitApp({ source }: SplitterAppProps) {
             console.log("Initialized a new split environment.");
         })();
     }, [source]);
-
-    const touchBackend = useMemo(() => (!isTouch() ? HTML5Backend : TouchBackend), []);
 
     if (!environment) return null;
 
@@ -171,13 +167,13 @@ export function SplitApp({ source }: SplitterAppProps) {
     };
 
     return (
-        <DndProvider backend={touchBackend}>
+        <>
             <SplitDragLayer />
 
             <Box pt={2} pb={16}>
                 <Box mb={2}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Stack direction="row" spacing={2}>
+                        <Stack direction="row" spacing={1}>
                             <FormControl variant="outlined">
                                 <InputLabel htmlFor="document-title">Folder Name</InputLabel>
                                 <OutlinedInput
@@ -195,6 +191,19 @@ export function SplitApp({ source }: SplitterAppProps) {
                             >
                                 Download
                             </LoadingButton>
+
+                            <Tooltip title="Coming soon!">
+                                <span>
+                                    <Button
+                                        sx={{ height: "100%" }}
+                                        variant="contained"
+                                        startIcon={<FileUploadIcon />}
+                                        disabled
+                                    >
+                                        Import PDF
+                                    </Button>
+                                </span>
+                            </Tooltip>
                         </Stack>
                         <Stack>
                             <Tooltip title="Renders the document pages to images before exporting them. This may reduce file size if you have a lot of elements on your pages.">
@@ -228,6 +237,6 @@ export function SplitApp({ source }: SplitterAppProps) {
 
                 {/* <JsonView data={environment} filter={["id", "label", "groups", "pages", "page", "name", "source"]} /> */}
             </Box>
-        </DndProvider>
+        </>
     );
 }
