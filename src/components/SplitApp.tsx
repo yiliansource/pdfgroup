@@ -163,8 +163,9 @@ export function SplitApp({ source }: SplitterAppProps) {
     const download = async () => {
         setDownloading(true);
 
-        const pipes: PDFPipeMethod[] = [flattenDocument];
-        await environment.save({ pipes: pipes });
+        const pipes: PDFPipeMethod[] = [];
+        if (flatten) pipes.push(flattenDocument);
+        await environment.save({ pipes });
 
         setDownloading(false);
     };
