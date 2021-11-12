@@ -2,8 +2,8 @@ import { Card } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { useDragLayer, XYCoord } from "react-dnd";
 
-import { PageDragInformation } from "src/lib/drag";
-import { DragItemTypes, SplitPage } from "src/lib/pdf/splitter";
+import { DragItemTypes, PageDragInformation } from "src/lib/drag";
+import { SplitPage } from "src/lib/pdf/splitter";
 
 import { SplitPagePreview } from "./SplitPagePreview";
 

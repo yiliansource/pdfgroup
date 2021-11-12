@@ -10,10 +10,6 @@ export interface SaveOptions {
     pipes: PDFPipeMethod[];
 }
 
-export enum DragItemTypes {
-    PAGE = "page",
-}
-
 export class SplitEnvironment {
     constructor(public label: string, public groups: SplitGroup[]) {}
 
@@ -30,10 +26,13 @@ export class SplitEnvironment {
 
         for (const group of this.groups) {
             const doc = await group.toPdflibDocument();
+            if (!doc) continue;
+
             const piped = await options.pipes.reduce(
                 async (piping, pipe) => await pipe(await piping),
                 Promise.resolve(doc)
             );
+
             const bytes = await piped.save();
             zip.file(group.label + ".pdf", bytes);
         }
@@ -49,7 +48,9 @@ export class SplitGroup implements IPdfLibConvertable {
         this.id = uuidv4();
     }
 
-    public async toPdflibDocument(): Promise<PDFDocument> {
+    public async toPdflibDocument(): Promise<PDFDocument | null> {
+        if (this.pages.length <= 0) return null;
+
         const doc = await PDFDocument.create();
 
         for (const page of this.pages) {

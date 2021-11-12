@@ -9,11 +9,11 @@ export class PdfSource implements IPdfDocumentConvertable {
     private _pdflib: PDFLibDocument | null = null;
     private _pdfjs: any | null = null;
 
-    public async toPdflibDocument() {
+    public async toPdflibDocument(): Promise<PDFLibDocument> {
         if (!this._pdflib) this._pdflib = await PDFLibDocument.load(this.data);
         return this._pdflib;
     }
-    public async toPdfjsDocument() {
+    public async toPdfjsDocument(): Promise<any> {
         if (!this._pdfjs) this._pdfjs = PDFJS.getDocument(this.data).promise;
         return this._pdfjs;
     }
@@ -25,11 +25,11 @@ export class PdfSource implements IPdfDocumentConvertable {
 }
 
 export interface IPdfLibConvertable {
-    toPdflibDocument(): Promise<PDFLibDocument>;
+    toPdflibDocument(): Promise<PDFLibDocument | null>;
 }
 
 export interface IPdfjsConvertable {
-    toPdfjsDocument(): Promise<any>;
+    toPdfjsDocument(): Promise<any | null>;
 }
 
 export interface IPdfDocumentConvertable extends IPdfLibConvertable, IPdfjsConvertable {}

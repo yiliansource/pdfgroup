@@ -6,3 +6,7 @@ export interface PageDragInformation {
     pageIndex: number;
     page: SplitPage;
 }
+
+export enum DragItemTypes {
+    PAGE = "page",
+}

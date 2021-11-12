@@ -4,8 +4,8 @@ import { useEffect } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
 
-import { PageDragInformation } from "src/lib/drag";
-import { DragItemTypes, SplitPage } from "src/lib/pdf/splitter";
+import { DragItemTypes, PageDragInformation } from "src/lib/drag";
+import { SplitPage } from "src/lib/pdf/splitter";
 
 import { SplitPagePreview } from "./SplitPagePreview";
 

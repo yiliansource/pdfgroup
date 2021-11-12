@@ -3,8 +3,8 @@ import { styled } from "@mui/system";
 import { useRef, useState } from "react";
 import { useDrop } from "react-dnd";
 
-import { PageDragInformation } from "src/lib/drag";
-import { DragItemTypes, SplitPage } from "src/lib/pdf/splitter";
+import { DragItemTypes, PageDragInformation } from "src/lib/drag";
+import { SplitPage } from "src/lib/pdf/splitter";
 
 import { SplitPageItem } from "./SplitPageItem";
 import { SplitPagePlaceholder } from "./SplitPagePlaceholder";
@@ -26,7 +26,7 @@ export function SplitPageList({ pages, groupIndex, movePage }: SplitPageListProp
     const [{ isOver, canDrop, item }, drop] = useDrop(
         () => ({
             accept: DragItemTypes.PAGE,
-            drop: (item: PageDragInformation, monitor) => {
+            drop: (item: PageDragInformation) => {
                 // we dont render adjacent placeholders, so we need to adjust the drop index, if it's greater
                 // than the actual page index, but only if the item is in the same group.
                 let adjustedDropIndex = dropIndex;

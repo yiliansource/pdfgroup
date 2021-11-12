@@ -1,3 +1,4 @@
+import DownloadIcon from "@mui/icons-material/Download";
 import { LoadingButton } from "@mui/lab";
 import {
     Button,
@@ -27,11 +28,14 @@ import { isTouch } from "src/lib/supports";
 import { useForceUpdate } from "src/lib/useForceUpdate";
 
 import { SplitDragLayer } from "./SplitDragLayer";
+import { SplitGroupAdder } from "./SplitGroupAdder";
 import { SplitGroupView } from "./SplitGroupView";
 
 export interface SplitterAppProps {
     source: PdfSource;
 }
+
+export type PageLocation = [groupIndex: number, pageIndex: number];
 
 export function SplitApp({ source }: SplitterAppProps) {
     const [environment, setEnvironment] = useState<SplitEnvironment | null>(null);
@@ -91,12 +95,18 @@ export function SplitApp({ source }: SplitterAppProps) {
 
         console.log(`Moved group from ${oldGroupIndex} to ${newGroupIndex}.`);
     };
-    const addGroup = () => {
-        environment.groups.push(new SplitGroup("test"));
+    const addGroup = (...pages: PageLocation[]) => {
+        const groupPages: SplitPage[] = [];
+        for (const page of pages) {
+            const [groupIndex, pageIndex] = page;
+            groupPages.push(...environment.groups[groupIndex].pages.splice(pageIndex, 1));
+        }
+
+        environment.groups.push(new SplitGroup("test", groupPages));
 
         forceUpdate();
 
-        console.log("Added a new group.");
+        console.log(`Added a new group with ${pages.length} page(s).`);
     };
     const renameGroup = (groupIndex: number, label: string) => {
         environment.groups[groupIndex].label = label;
@@ -125,16 +135,26 @@ export function SplitApp({ source }: SplitterAppProps) {
 
             <Box pt={2} pb={16}>
                 <Box mb={2}>
-                    <Stack direction="row" justifyContent="space-between">
-                        <FormControl variant="outlined">
-                            <InputLabel htmlFor="document-title">Folder Name</InputLabel>
-                            <OutlinedInput
-                                id="document-title"
-                                value={environment.label}
-                                onChange={(e) => renameEnvironment(e.target.value)}
-                                label="Folder Name"
-                            />
-                        </FormControl>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Stack direction="row" spacing={2}>
+                            <FormControl variant="outlined">
+                                <InputLabel htmlFor="document-title">Folder Name</InputLabel>
+                                <OutlinedInput
+                                    id="document-title"
+                                    value={environment.label}
+                                    onChange={(e) => renameEnvironment(e.target.value)}
+                                    label="Folder Name"
+                                />
+                            </FormControl>
+                            <LoadingButton
+                                variant="contained"
+                                startIcon={<DownloadIcon />}
+                                onClick={download}
+                                loading={downloading}
+                            >
+                                Download
+                            </LoadingButton>
+                        </Stack>
                         <Stack>
                             <Tooltip title="Renders the document pages to images before exporting them. This may reduce file size if you have a lot of elements on your pages.">
                                 <FormControlLabel
@@ -163,10 +183,7 @@ export function SplitApp({ source }: SplitterAppProps) {
                     ))}
                 </TransitionGroup>
 
-                <Button onClick={addGroup}>New Group</Button>
-                <LoadingButton onClick={download} loading={downloading}>
-                    Download
-                </LoadingButton>
+                <SplitGroupAdder addGroup={addGroup} />
 
                 {/* <JSONView data={environment} filter={["id", "label", "groups", "pages", "page", "name", "source"]} /> */}
             </Box>
