@@ -22,21 +22,47 @@ import {
 import { Box, styled } from "@mui/system";
 import React, { useState } from "react";
 
-import { PageLocation, SplitGroup } from "src/lib/pdf/splitter";
+import { SplitGroup } from "src/lib/pdf/splitter";
+import { PageLocation } from "src/lib/pdf/types";
 
 import { SplitPageList } from "./SplitPageList";
 
 export interface SplitGroupViewProps {
+    /**
+     * The group that should be displayed.
+     */
     group: SplitGroup;
+    /**
+     * The index of the group.
+     */
     groupIndex: number;
+    /**
+     * The total number of groups that will be displayed.
+     */
     totalGroups: number;
 
+    /**
+     * Handler function to be invoked when the user wants to move a page between two locations.
+     */
     movePage(source: PageLocation, dest: PageLocation): void;
+    /**
+     * Handler function to be invoked when the user wants to move a group between two locations.
+     */
     moveGroup(oldGroupIndex: number, newGroupIndex: number): void;
+    /**
+     * Handler function to be invoked when the user wants to remove a group.
+     */
     removeGroup(groupIndex: number): void;
+    /**
+     * Handler function to be invoked when the user wants to rename a group.
+     */
     renameGroup(groupIndex: number, label: string): void;
 }
 
+/**
+ * An interactive displays of a split group. The user has the ability to rearrange groups, rename them and move
+ * pages around inside them via drag and drop.
+ */
 export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewProps>(
     ({ group, groupIndex, totalGroups, movePage, moveGroup, removeGroup, renameGroup }, ref) => {
         const [collapsed, setCollapsed] = useState(false);
@@ -94,6 +120,7 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
                             <span>
                                 <IconButton
                                     onClick={() =>
+                                        // If the group contains items, we want to display a warning before deleting.
                                         group.pages.length > 0 ? setShowDeleteWarning(true) : removeGroup(groupIndex)
                                     }
                                     disabled={totalGroups <= 1}

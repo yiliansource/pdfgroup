@@ -3,18 +3,24 @@ import JSZip from "jszip";
 import { PDFDocument } from "pdf-lib";
 import { v4 as uuidv4 } from "uuid";
 
-import { IPdfLibConvertable, PdfSource } from "./file";
-import { PDFPipeMethod } from "./pipes/types";
+import { PdfSource } from "./file";
+import { IIdentifiable, ILabelled, IPdfLibConvertable, PageLocation, SaveOptions } from "./types";
 
-export interface SaveOptions {
-    pipes: PDFPipeMethod[];
-}
+/**
+ * An environment that holds pages that can be ordered into groups.
+ */
+export class SplitEnvironment implements ILabelled {
+    public label: string;
+    public groups: SplitGroup[];
 
-export type PageLocation = { group: number; page: number };
+    constructor(label: string, groups: SplitGroup[]) {
+        this.label = label;
+        this.groups = groups;
+    }
 
-export class SplitEnvironment {
-    constructor(public label: string, public groups: SplitGroup[]) {}
-
+    /**
+     * Saves the environment into a ZIP-archive.
+     */
     public async save(options?: SaveOptions): Promise<void> {
         options = Object.assign(
             {},
@@ -30,6 +36,7 @@ export class SplitEnvironment {
             const doc = await group.toPdflibDocument();
             if (!doc) continue;
 
+            // Send the document through all the provided pipe operations.
             const piped = await options.pipes.reduce(
                 async (piping, pipe) => await pipe(await piping),
                 Promise.resolve(doc)
@@ -43,15 +50,26 @@ export class SplitEnvironment {
         saveAs(content, this.label + ".zip");
     }
 
+    /**
+     * Returns the desired page in the environment, identified by a page index.
+     */
     public getPage(location: PageLocation): SplitPage {
         return this.groups[location.group].pages[location.page];
     }
 }
 
-export class SplitGroup implements IPdfLibConvertable {
+/**
+ * A group containing ordered pages, contained in an environment.
+ */
+export class SplitGroup implements IIdentifiable, ILabelled, IPdfLibConvertable {
     public id: string;
-    constructor(public label: string, public pages: SplitPage[] = []) {
+    public label: string;
+    public pages: SplitPage[];
+
+    constructor(label: string, pages: SplitPage[] = []) {
         this.id = uuidv4();
+        this.label = label;
+        this.pages = pages;
     }
 
     public async toPdflibDocument(): Promise<PDFDocument | null> {
@@ -61,7 +79,7 @@ export class SplitGroup implements IPdfLibConvertable {
 
         for (const page of this.pages) {
             const source = await page.source.toPdflibDocument();
-            const [sourcePage] = await doc.copyPages(source, [page.page]);
+            const [sourcePage] = await doc.copyPages(source, [page.index]);
 
             doc.addPage(sourcePage);
         }
@@ -70,9 +88,17 @@ export class SplitGroup implements IPdfLibConvertable {
     }
 }
 
-export class SplitPage {
+/**
+ * A single page contained in a group.
+ */
+export class SplitPage implements IIdentifiable {
     public id: string;
-    constructor(public page: number, public source: PdfSource) {
+    public index: number;
+    public source: PdfSource;
+
+    constructor(page: number, source: PdfSource) {
         this.id = uuidv4();
+        this.index = page;
+        this.source = source;
     }
 }

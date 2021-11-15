@@ -1,6 +1,9 @@
 import "@mui/lab/themeAugmentation";
 import { createTheme } from "@mui/material/styles";
 
+/**
+ * Creates the main theme used for the application.
+ */
 const theme = createTheme({
     palette: {
         primary: {
@@ -15,38 +18,6 @@ const theme = createTheme({
             contrastText: "white",
         },
     },
-    // components: {
-    //     MuiButton: {
-    //         defaultProps: {
-    //             disableElevation: true,
-    //         },
-    //         styleOverrides: {
-    //             root: {
-    //                 borderRadius: "50px",
-    //             },
-    //         },
-    //         variants: [
-    //             {
-    //                 props: { size: "small" },
-    //                 style: {
-    //                     padding: "4px 20px",
-    //                 },
-    //             },
-    //             {
-    //                 props: { size: "medium" },
-    //                 style: {
-    //                     padding: "6px 20px",
-    //                 },
-    //             },
-    //             {
-    //                 props: { size: "large" },
-    //                 style: {
-    //                     padding: "8px 30px",
-    //                 },
-    //             },
-    //         ],
-    //     },
-    // },
 });
 
 export default theme;

@@ -5,12 +5,32 @@ import { useRef } from "react";
 import { useDrop } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 
+import { hasExtension } from "src/lib/io/ext";
+
+/**
+ * Represents properties accepted on the file picker component.
+ */
 export interface FilePickerProps {
+    /**
+     * A list of comma-seperated file extensions to accept as picked/dropped files.
+     * This is will also be passed to the underlying <input> field.
+     *
+     * @example .pdf,.jpeg
+     */
     accept?: string;
 
+    /**
+     * Called when the user selects a file via drop or the file selection dialog.
+     *
+     * @param file The selected file.
+     */
     onChange?(file: File): void;
 }
 
+/**
+ * The FilePicker component is used to provide a stylized and convenient way for users to pick files.
+ * They can either activate a file dialog via a button, or directly drop a file in the browser to read it.
+ */
 export function FilePicker({ accept, onChange }: FilePickerProps) {
     const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -18,7 +38,8 @@ export function FilePicker({ accept, onChange }: FilePickerProps) {
         accept: NativeTypes.FILE,
         drop: (item) => {
             const file = item.files[0];
-            if (testExtension(file, accept)) {
+            // Only allow files that match the extension, if desired.
+            if (hasExtension(file.name, accept)) {
                 onChange?.(file);
             }
         },
@@ -36,6 +57,7 @@ export function FilePicker({ accept, onChange }: FilePickerProps) {
                 onChange={(e) => {
                     if (e.target.files && e.target.files.length > 0) {
                         const file = e.target.files[0];
+                        // There's no need to test the file extension here, we trust the input dialog filter.
                         onChange?.(file);
                     }
                 }}
@@ -69,13 +91,12 @@ const Root = styled(Box)({
     borderRadius: 6,
 });
 
+/**
+ * An <input> element, styled to be invisible to the user, used only internally for browser logic.
+ */
 const HiddenInput = styled("input")({
     position: "absolute",
     width: 0,
     height: 0,
     opacity: 0,
 });
-
-function testExtension(file: File, accept?: string) {
-    return !accept || accept.split(",").some((ext) => file.name.endsWith(ext));
-}

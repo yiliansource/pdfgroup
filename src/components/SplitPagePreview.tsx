@@ -1,26 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Cache } from "src/lib/cache";
+import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import { SplitPage } from "src/lib/pdf/splitter";
 
 export interface SplitPagePreviewProps {
+    /**
+     * The page that a preview should be rendered for.
+     */
     page: SplitPage;
 }
 
-export interface PreviewCacheData {
-    canvasWidth: number;
-    canvasHeight: number;
-    imageData: ImageData;
-}
+// A cache that preview rendering data should be stored in.
+const renderCache = new Map<string, ImageData>();
+// A quality scale that the previews should be rendered at.
+const qualityScale = 2;
 
-const renderCache = new Cache<PreviewCacheData, string>();
-
+/**
+ * A rendered preview of a single page in a PDF.
+ */
 export function SplitPagePreview({ page }: SplitPagePreviewProps) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [rendered, setRendered] = useState(false);
 
     useEffect(() => {
-        if (!page || !canvasRef.current) return;
+        if (!page) return;
 
         (async function () {
             const pdfjsDocument = await page.source.toPdfjsDocument();
@@ -31,37 +34,19 @@ export function SplitPagePreview({ page }: SplitPagePreviewProps) {
             const ctx = canvas.getContext("2d");
             if (!ctx) throw new Error("Missing canvas 2D context.");
 
-            const scale = 2;
+            // TODO: There is a weird bug that occurs when dragging and dropping pages quickly in succession, resulting
+            // in blank pages being rendered. This should be investigated and fixed.
 
             if (renderCache.has(page.id)) {
-                const { canvasWidth, canvasHeight, imageData } = renderCache.get(page.id)!;
-
-                canvas.width = canvasWidth * scale;
-                canvas.height = canvasHeight * scale;
-                canvas.style.width = canvasWidth + "px";
-                canvas.style.height = canvasHeight + "px";
-
+                const imageData = renderCache.get(page.id)!;
                 ctx.putImageData(imageData, 0, 0);
 
-                console.log(`Page ${page.page} (${page.source.name}) rendered from cache.`);
+                console.log(`Page ${page.index} (${page.source.name}) was rendered from cache.`);
             } else {
-                const pdfpage = await pdfjsDocument.getPage(page.page + 1);
+                const pdfpage = await pdfjsDocument.getPage(page.index + 1); // pdf.js pages are 1-indexed.
 
                 const viewport = pdfpage.getViewport({ scale: 1 });
-
-                const pageWidth = viewport.width;
-                const pageHeight = viewport.height;
-                const pageRatio = pageWidth / pageHeight;
-
-                const canvasWidth = 127;
-                const canvasHeight = Math.round(canvasWidth / pageRatio);
-
-                const drawViewport = viewport.clone({ scale: (canvasWidth / pageWidth) * scale });
-
-                canvas.width = canvasWidth * scale;
-                canvas.height = canvasHeight * scale;
-                canvas.style.width = canvasWidth + "px";
-                canvas.style.height = canvasHeight + "px";
+                const drawViewport = viewport.clone({ scale: (PREVIEW_PAGE_WIDTH / viewport.width) * qualityScale });
 
                 const renderContext = {
                     canvasContext: ctx,
@@ -70,21 +55,27 @@ export function SplitPagePreview({ page }: SplitPagePreviewProps) {
 
                 await pdfpage.render(renderContext).promise;
 
-                const cacheData: PreviewCacheData = {
-                    canvasWidth,
-                    canvasHeight,
-                    imageData: ctx.getImageData(0, 0, canvasWidth * scale, canvasHeight * scale),
-                };
-                renderCache.store(page.id, cacheData);
+                const cacheData = ctx.getImageData(
+                    0,
+                    0,
+                    PREVIEW_PAGE_WIDTH * qualityScale,
+                    PREVIEW_PAGE_HEIGHT * qualityScale
+                );
+                renderCache.set(page.id, cacheData);
 
-                console.log(`Page ${page.page} (${page.source.name}) rendered and cached.`);
+                console.log(`Page ${page.index} (${page.source.name}) was rendered and cached.`);
             }
 
             setRendered(true);
         })();
     }, [page]);
 
-    if (!page) return null;
-
-    return <canvas ref={canvasRef}></canvas>;
+    return (
+        <canvas
+            ref={canvasRef}
+            width={PREVIEW_PAGE_WIDTH * qualityScale}
+            height={PREVIEW_PAGE_HEIGHT * qualityScale}
+            style={{ width: PREVIEW_PAGE_WIDTH + "px", height: PREVIEW_PAGE_HEIGHT + "px" }}
+        ></canvas>
+    );
 }

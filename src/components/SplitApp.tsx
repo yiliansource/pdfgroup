@@ -21,8 +21,8 @@ import { range } from "src/lib/collections";
 import { removeExtension } from "src/lib/io/ext";
 import { PdfSource } from "src/lib/pdf/file";
 import { flattenDocument } from "src/lib/pdf/pipes/flattener";
-import { PDFPipeMethod } from "src/lib/pdf/pipes/types";
-import { PageLocation, SplitEnvironment, SplitGroup, SplitPage } from "src/lib/pdf/splitter";
+import { SplitEnvironment, SplitGroup, SplitPage } from "src/lib/pdf/splitter";
+import { PageLocation, PDFPipeMethod } from "src/lib/pdf/types";
 
 import { SplitDragLayer } from "./SplitDragLayer";
 import { SplitGroupAdder } from "./SplitGroupAdder";
@@ -30,29 +30,41 @@ import { SplitGroupView } from "./SplitGroupView";
 import { JsonView } from "./files/JsonView";
 
 export interface SplitterAppProps {
+    /**
+     * The PDF source file to use for the environment initialization.
+     * Note that the component will be re-initialized if this changes.
+     */
     source: PdfSource;
 }
 
+/**
+ * The main logic container for the splitting and grouping application.
+ * This component handles the SplitEnvironment and manages it's state appropriately.
+ */
 export function SplitApp({ source }: SplitterAppProps) {
     const [environment, setEnvironment] = useState<SplitEnvironment | null>(null);
     const [downloading, setDownloading] = useState(false);
+
+    // TODO: Rewrite to proper "options" object once more options are provided.
     const [flatten, setFlatten] = useState(false);
 
     useEffect(() => {
         if (!source) return;
 
         (async function () {
+            // Initialize the splitting environment using the provided PDF source.
             const document = await source.toPdflibDocument();
             const pageCount = document.getPageCount();
             const name = removeExtension(source.name);
 
-            const env = new SplitEnvironment(name, [
-                new SplitGroup(
-                    name,
-                    range(0, pageCount).map((i) => new SplitPage(i, source))
-                ),
-            ]);
-            setEnvironment(env);
+            setEnvironment(
+                new SplitEnvironment(name, [
+                    new SplitGroup(
+                        name,
+                        range(0, pageCount).map((i) => new SplitPage(i, source))
+                    ),
+                ])
+            );
 
             console.log("Initialized a new split environment.");
         })();
@@ -60,6 +72,13 @@ export function SplitApp({ source }: SplitterAppProps) {
 
     if (!environment) return null;
 
+    // TODO: Rewrite to useCallback methods?
+
+    /**
+     * Handler function to rename the environment to a specific string.
+     *
+     * @param label The string to rename the environment to.
+     */
     const renameEnvironment = (label: string) => {
         setEnvironment((e) =>
             update(e, {
@@ -67,13 +86,25 @@ export function SplitApp({ source }: SplitterAppProps) {
             })
         );
     };
+    /**
+     * Handler function to move a page from one location to another.
+     * This method can be used to move a page to a different group, or re-arrange it in it's current group.
+     *
+     * @param source The current location of the page, used for indexing.
+     * @param dest The desired location of the page, used for indexing.
+     */
     const movePage = (source: PageLocation, dest: PageLocation) => {
+        // If source and destination match, don't perform any movement.
         if (source.group === dest.group && source.page === dest.page) return;
 
         setEnvironment((e) => {
+            // Determine the page instance to move around.
             const page = e!.getPage(source);
+
             return source.group === dest.group
-                ? update(e, {
+                ? // If we need to move around the page inside it's current group, we use two splicing transactions
+                  // on the same array. Note that the index is adjusted appropriately by the calling component.
+                  update(e, {
                       groups: {
                           [dest.group]: {
                               pages: {
@@ -95,11 +126,20 @@ export function SplitApp({ source }: SplitterAppProps) {
 
         console.log(`Moved page from [${source.group}, ${source.page}] to [${dest.group}, ${dest.page}].`);
     };
+    /**
+     * Handler function to move a group to a specified destination index.
+     *
+     * @param sourceIndex The current location of the group.
+     * @param destIndex The desired location of the group.
+     */
     const moveGroup = (sourceIndex: number, destIndex: number) => {
+        // If source and destination match, don't perform any movement.
         if (sourceIndex === destIndex) return;
 
         setEnvironment((e) => {
+            // Determine the group to move.
             const group = environment.groups[sourceIndex];
+
             return update(e, {
                 groups: {
                     $splice: [
@@ -112,21 +152,32 @@ export function SplitApp({ source }: SplitterAppProps) {
 
         console.log(`Moved group from ${sourceIndex} to ${destIndex}.`);
     };
+    /**
+     * Handler function to add a new group to the environment.
+     * Optionally, an initial page can be specified to be immediately moved into the group.
+     *
+     * @param initial The (optional) initial page to populate the group with.
+     */
     const addGroup = (initial?: PageLocation) => {
         setEnvironment((e) => {
+            // TODO: Pick appropriate group label.
+            const label = "";
             if (initial) {
+                // Determine the page to move.
                 const page = e!.getPage(initial);
 
+                // Since we are moving a page around, we need to remove it from it's old location, before inserting
+                // it into the new, created group.
                 return update(e, {
                     groups: {
                         [initial.group]: { pages: { $splice: [[initial.page, 1]] } },
-                        $push: [new SplitGroup("", [page])],
+                        $push: [new SplitGroup(label, [page])],
                     },
                 });
             } else {
                 return update(e, {
                     groups: {
-                        $push: [new SplitGroup("")],
+                        $push: [new SplitGroup(label)],
                     },
                 });
             }
@@ -134,6 +185,12 @@ export function SplitApp({ source }: SplitterAppProps) {
 
         console.log(`Added a new group.`);
     };
+    /**
+     * Handler function to rename a specific group to a specific string.
+     *
+     * @param groupIndex The index of the group to rename.
+     * @param label The string to rename the group to.
+     */
     const renameGroup = (groupIndex: number, label: string) => {
         setEnvironment((e) =>
             update(e, {
@@ -145,6 +202,12 @@ export function SplitApp({ source }: SplitterAppProps) {
             })
         );
     };
+    /**
+     * Handler function to remove the group at the specified index.
+     * Note that this simply removes it, without any warning or additional checks.
+     *
+     * @param groupIndex The index of the group to remove.
+     */
     const removeGroup = (groupIndex: number) => {
         setEnvironment((e) =>
             update(e, {
@@ -156,11 +219,17 @@ export function SplitApp({ source }: SplitterAppProps) {
 
         console.log(`Removed group ${groupIndex}.`);
     };
+    /**
+     * Handler function to initiate the download of the environment.
+     * This also prompts the save/download dialog.
+     */
     const download = async () => {
         setDownloading(true);
 
+        // Determine which pipes to use.
         const pipes: PDFPipeMethod[] = [];
         if (flatten) pipes.push(flattenDocument);
+
         await environment.save({ pipes });
 
         setDownloading(false);
@@ -168,6 +237,7 @@ export function SplitApp({ source }: SplitterAppProps) {
 
     return (
         <>
+            {/* We use a custom drag layer to display custom drag preview images for items. */}
             <SplitDragLayer />
 
             <Box pt={2} pb={16}>

@@ -1,11 +1,20 @@
-import { styled } from "@mui/system";
+import { Box } from "@mui/system";
 
+import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
+
+/**
+ * A placeholder that is rendered when dragging and before dropping a page item.
+ */
 export function SplitPagePlaceholder() {
-    return <Root sx={{ height: "180px", width: "127px" }}></Root>;
+    return (
+        <Box
+            sx={{
+                height: PREVIEW_PAGE_HEIGHT,
+                width: PREVIEW_PAGE_WIDTH,
+                borderRadius: 1,
+                flex: `0 0 ${PREVIEW_PAGE_WIDTH}px`,
+                border: "2px dashed #ccc",
+            }}
+        />
+    );
 }
-
-const Root = styled("div")({
-    borderRadius: "6px",
-    flex: "0 0 127px",
-    border: "2px dashed #ccc",
-});
