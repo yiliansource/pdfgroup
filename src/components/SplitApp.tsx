@@ -37,6 +37,13 @@ export interface SplitterAppProps {
     source: PdfSource;
 }
 
+interface SplitterAppOptions {
+    /**
+     * Whether to flatten the pages in the environment before downloading.
+     */
+    flatten: boolean;
+}
+
 /**
  * The main logic container for the splitting and grouping application.
  * This component handles the SplitEnvironment and manages it's state appropriately.
@@ -45,8 +52,9 @@ export function SplitApp({ source }: SplitterAppProps) {
     const [environment, setEnvironment] = useState<SplitEnvironment | null>(null);
     const [downloading, setDownloading] = useState(false);
 
-    // TODO: Rewrite to proper "options" object once more options are provided.
-    const [flatten, setFlatten] = useState(false);
+    const [options, setOptions] = useState<SplitterAppOptions>({
+        flatten: false,
+    });
 
     useEffect(() => {
         if (!source) return;
@@ -228,7 +236,7 @@ export function SplitApp({ source }: SplitterAppProps) {
 
         // Determine which pipes to use.
         const pipes: PDFPipeMethod[] = [];
-        if (flatten) pipes.push(flattenDocument);
+        if (options.flatten) pipes.push(flattenDocument);
 
         await environment.save({ pipes });
 
@@ -279,7 +287,18 @@ export function SplitApp({ source }: SplitterAppProps) {
                             <Tooltip title="Renders the document pages to images before exporting them. This may reduce file size if you have a lot of elements on your pages.">
                                 <FormControlLabel
                                     label="Flatten"
-                                    control={<Switch value={flatten} onChange={(e, c) => setFlatten(c)} />}
+                                    control={
+                                        <Switch
+                                            value={options.flatten}
+                                            onChange={(_, c) =>
+                                                setOptions((o) =>
+                                                    update(o, {
+                                                        flatten: { $set: c },
+                                                    })
+                                                )
+                                            }
+                                        />
+                                    }
                                 />
                             </Tooltip>
                         </Stack>
