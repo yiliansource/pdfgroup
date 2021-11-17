@@ -1,4 +1,4 @@
-import { PDFDocument as PDFLibDocument } from "pdf-lib";
+import type { PDFDocument as PDFLibDocument } from "pdf-lib";
 
 /**
  * Indicates that an object instance can be labelled by a string.
@@ -37,7 +37,7 @@ export interface IPdfjsConvertable {
     /**
      * Converts the object into a pdf.js document.
      */
-    toPdfjsDocument(): Promise<any | null>;
+    toPdfjsDocument(): Promise<PDFJsDocument | null>;
 }
 
 /**
@@ -63,3 +63,9 @@ export type PageLocation = { group: number; page: number };
  * A method that pipes a pdf-lib document into a new one.
  */
 export type PDFPipeMethod = (source: PDFLibDocument) => Promise<PDFLibDocument>;
+
+/**
+ * Represents a type for pdf.js documents. This only used since the typings for pdf.js are broken.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type PDFJsDocument = any;

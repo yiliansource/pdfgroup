@@ -1,4 +1,4 @@
-export interface JsonViewProps<T = any> {
+export interface JsonViewProps<T = unknown> {
     /**
      * The data to render.
      */
@@ -16,7 +16,7 @@ export interface JsonViewProps<T = any> {
 /**
  * A JsonView dumps data into a JSON preview for debugging purposes.
  */
-export function JsonView<T = any>({ data, spaces = 2, filter }: JsonViewProps<T>) {
+export function JsonView<T = unknown>({ data, spaces = 2, filter }: JsonViewProps<T>) {
     return (
         <pre>
             <code>{JSON.stringify(data, filter, spaces)}</code>

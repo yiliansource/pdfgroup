@@ -1,4 +1,4 @@
-/* eslint-disable react/display-name, @next/next/no-document-import-in-page */
+/* eslint-disable */
 import createEmotionServer from "@emotion/server/create-instance";
 import Document, { Head, Html, Main, NextScript } from "next/document";
 import type { DocumentContext, DocumentInitialProps } from "next/document";
@@ -17,7 +17,8 @@ export default class MyDocument extends Document {
         const { extractCriticalToChunks } = createEmotionServer(cache);
 
         ctx.renderPage = () =>
-            originalRenderPage({ enhanceApp: (App: any) => (props) => <App emotionCache={cache} {...props} /> });
+            // @ts-ignore
+            originalRenderPage({ enhanceApp: (App: () => any) => (props) => <App emotionCache={cache} {...props} /> });
 
         const initialProps = await Document.getInitialProps(ctx);
 

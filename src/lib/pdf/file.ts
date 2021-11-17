@@ -2,7 +2,7 @@ import { PDFDocument as PDFLibDocument } from "pdf-lib";
 import * as PDFJS from "pdfjs-dist/build/pdf";
 
 import { readFile } from "../io/read";
-import { IPdfDocumentConvertable } from "./types";
+import { IPdfDocumentConvertable, PDFJsDocument } from "./types";
 
 /**
  * Holds the source information for a PDF file. This includes the filename and the binary data.
@@ -14,13 +14,13 @@ export class PdfSource implements IPdfDocumentConvertable {
     public constructor(public name: string, public data: ArrayBuffer) {}
 
     private _pdflib: PDFLibDocument | null = null;
-    private _pdfjs: any | null = null;
+    private _pdfjs: PDFJsDocument | null = null;
 
     public async toPdflibDocument(): Promise<PDFLibDocument> {
         if (!this._pdflib) this._pdflib = await PDFLibDocument.load(this.data);
         return this._pdflib;
     }
-    public async toPdfjsDocument(): Promise<any> {
+    public async toPdfjsDocument(): Promise<PDFJsDocument> {
         if (!this._pdfjs) this._pdfjs = PDFJS.getDocument(this.data).promise;
         return this._pdfjs;
     }

@@ -69,7 +69,7 @@ export function SplitPageList({ pages, groupIndex, movePage }: SplitPageListProp
                 item: monitor.getItem<PageDragInformation>(),
             }),
         }),
-        [groupIndex, dropIndex]
+        [groupIndex, dropIndex, pages]
     );
 
     const pageList: JSX.Element[] = [];

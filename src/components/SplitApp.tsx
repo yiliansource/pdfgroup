@@ -27,7 +27,6 @@ import { PageLocation, PDFPipeMethod } from "src/lib/pdf/types";
 import { SplitDragLayer } from "./SplitDragLayer";
 import { SplitGroupAdder } from "./SplitGroupAdder";
 import { SplitGroupView } from "./SplitGroupView";
-import { JsonView } from "./files/JsonView";
 
 export interface SplitterAppProps {
     /**

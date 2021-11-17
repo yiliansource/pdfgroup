@@ -14,6 +14,7 @@ import { isTouch } from "src/lib/supports";
 import "src/styles/globals.css";
 
 // Initialize the pdf.js worker via the appropriate CDN endpoint.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfjs = require("pdfjs-dist/build/pdf");
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 

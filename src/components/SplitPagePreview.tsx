@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import { SplitPage } from "src/lib/pdf/splitter";
@@ -20,7 +20,6 @@ const qualityScale = 2;
  */
 export function SplitPagePreview({ page }: SplitPagePreviewProps) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const [rendered, setRendered] = useState(false);
 
     useEffect(() => {
         if (!page) return;
@@ -65,8 +64,6 @@ export function SplitPagePreview({ page }: SplitPagePreviewProps) {
 
                 console.log(`Page ${page.index} (${page.source.name}) was rendered and cached.`);
             }
-
-            setRendered(true);
         })();
     }, [page]);
 
