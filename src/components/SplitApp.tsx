@@ -2,7 +2,9 @@ import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import { LoadingButton } from "@mui/lab";
 import {
+    Backdrop,
     Button,
+    CircularProgress,
     Collapse,
     FormControl,
     FormControlLabel,
@@ -13,12 +15,11 @@ import {
     Tooltip,
 } from "@mui/material";
 import { Box } from "@mui/system";
+import fileDialog from "file-dialog";
 import update from "immutability-helper";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { TransitionGroup } from "react-transition-group";
 
-import { range } from "src/lib/collections";
-import { removeExtension } from "src/lib/io/ext";
 import { PdfSource } from "src/lib/pdf/file";
 import { flattenDocument } from "src/lib/pdf/pipes/flattener";
 import { SplitEnvironment, SplitGroup, SplitPage } from "src/lib/pdf/splitter";
@@ -27,14 +28,6 @@ import { PageLocation, PDFPipeMethod } from "src/lib/pdf/types";
 import { SplitDragLayer } from "./SplitDragLayer";
 import { SplitGroupAdder } from "./SplitGroupAdder";
 import { SplitGroupView } from "./SplitGroupView";
-
-export interface SplitterAppProps {
-    /**
-     * The PDF source file to use for the environment initialization.
-     * Note that the component will be re-initialized if this changes.
-     */
-    source: PdfSource;
-}
 
 interface SplitterAppOptions {
     /**
@@ -47,40 +40,44 @@ interface SplitterAppOptions {
  * The main logic container for the splitting and grouping application.
  * This component handles the SplitEnvironment and manages it's state appropriately.
  */
-export function SplitApp({ source }: SplitterAppProps) {
-    const [environment, setEnvironment] = useState<SplitEnvironment | null>(null);
-    const [downloading, setDownloading] = useState(false);
+export function SplitApp() {
+    const [environment, setEnvironment] = useState<SplitEnvironment>(new SplitEnvironment("", []));
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
 
     const [options, setOptions] = useState<SplitterAppOptions>({
         flatten: false,
     });
 
-    useEffect(() => {
-        if (!source) return;
+    /**
+     * Handler function to import a selected file into the environment.
+     *
+     * @param file The file to import.
+     */
+    const importFile = (file: File) => {
+        if (!file || !file.name.endsWith(".pdf")) return;
 
         (async function () {
-            // Initialize the splitting environment using the provided PDF source.
-            const document = await source.toPdflibDocument();
-            const pageCount = document.getPageCount();
-            const name = removeExtension(source.name);
+            setIsImporting(true);
 
-            setEnvironment(
-                new SplitEnvironment(name, [
-                    new SplitGroup(
-                        name,
-                        range(0, pageCount).map((i) => new SplitPage(i, source))
-                    ),
-                ])
+            const source = await PdfSource.fromFile(file);
+            const pageIndices = (await source.toPdflibDocument()).getPageIndices();
+            setEnvironment((e) =>
+                update(e, {
+                    groups: {
+                        $push: [
+                            new SplitGroup(
+                                source.name,
+                                pageIndices.map((index) => new SplitPage(index, source))
+                            ),
+                        ],
+                    },
+                })
             );
 
-            console.log("Initialized a new split environment.");
+            setIsImporting(false);
         })();
-    }, [source]);
-
-    if (!environment) return null;
-
-    // TODO: Rewrite to useCallback methods?
-
+    };
     /**
      * Handler function to rename the environment to a specific string.
      *
@@ -231,7 +228,7 @@ export function SplitApp({ source }: SplitterAppProps) {
      * This also prompts the save/download dialog.
      */
     const download = async () => {
-        setDownloading(true);
+        setIsDownloading(true);
 
         // Determine which pipes to use.
         const pipes: PDFPipeMethod[] = [];
@@ -239,13 +236,17 @@ export function SplitApp({ source }: SplitterAppProps) {
 
         await environment.save({ pipes });
 
-        setDownloading(false);
+        setIsDownloading(false);
     };
 
     return (
         <>
             {/* We use a custom drag layer to display custom drag preview images for items. */}
             <SplitDragLayer />
+
+            <Backdrop open={isImporting} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                <CircularProgress color="inherit" />
+            </Backdrop>
 
             <Box pt={2} pb={16}>
                 <Box mb={2}>
@@ -264,23 +265,18 @@ export function SplitApp({ source }: SplitterAppProps) {
                                 variant="contained"
                                 startIcon={<DownloadIcon />}
                                 onClick={download}
-                                loading={downloading}
+                                loading={isDownloading}
                             >
-                                Download
+                                Export folder
                             </LoadingButton>
 
-                            <Tooltip title="Coming soon!">
-                                <span>
-                                    <Button
-                                        sx={{ height: "100%" }}
-                                        variant="contained"
-                                        startIcon={<FileUploadIcon />}
-                                        disabled
-                                    >
-                                        Import PDF
-                                    </Button>
-                                </span>
-                            </Tooltip>
+                            <Button
+                                variant="outlined"
+                                startIcon={<FileUploadIcon />}
+                                onClick={() => fileDialog({ accept: ".pdf" }).then((files) => importFile(files[0]))}
+                            >
+                                Import PDF
+                            </Button>
                         </Stack>
                         <Stack>
                             <Tooltip title="Renders the document pages to images before exporting them. This may reduce file size if you have a lot of elements on your pages.">
@@ -321,7 +317,7 @@ export function SplitApp({ source }: SplitterAppProps) {
                     ))}
                 </TransitionGroup>
 
-                <SplitGroupAdder addGroup={addGroup} />
+                <SplitGroupAdder addGroup={addGroup} importFile={importFile} />
 
                 {/* <JsonView data={environment} filter={["id", "label", "groups", "pages", "page", "name", "source"]} /> */}
             </Box>

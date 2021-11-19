@@ -17,6 +17,7 @@
         "@mui/lab": "^5.0.0-alpha.54",
         "@mui/material": "^5.0.2",
         "clsx": "^1.1.1",
+        "file-dialog": "^0.0.8",
         "file-saver": "^2.0.5",
         "immutability-helper": "^3.1.1",
         "jszip": "^3.7.1",

@@ -21,3 +21,13 @@ export interface PageDragInformation {
 export enum DragItemTypes {
     PAGE = "page",
 }
+
+/**
+ * Holds information about a dropped file (list).
+ */
+export interface FileDropInformation {
+    /**
+     * The native files that were dropped.
+     */
+    files: File[];
+}

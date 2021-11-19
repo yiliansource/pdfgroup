@@ -123,7 +123,6 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
                                         // If the group contains items, we want to display a warning before deleting.
                                         group.pages.length > 0 ? setShowDeleteWarning(true) : removeGroup(groupIndex)
                                     }
-                                    disabled={totalGroups <= 1}
                                 >
                                     <DeleteIcon />
                                 </IconButton>
