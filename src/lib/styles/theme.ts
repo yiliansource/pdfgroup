@@ -6,16 +6,11 @@ import { createTheme } from "@mui/material/styles";
  */
 const theme = createTheme({
     palette: {
+        // https://material.io/resources/color/
         primary: {
-            main: "#3F3D56",
-            light: "#6075A8",
-            dark: "#3F3D56",
-        },
-        secondary: {
-            main: "#F59999",
-            light: "#F59999",
-            dark: "#F59999",
-            contrastText: "white",
+            main: "#CC4B4C",
+            light: "#ff7c78",
+            dark: "#951424",
         },
     },
 });

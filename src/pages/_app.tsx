@@ -1,6 +1,6 @@
 import { CacheProvider } from "@emotion/react";
 import { EmotionCache } from "@emotion/utils";
-import { CssBaseline } from "@mui/material";
+import { CssBaseline, ThemeProvider } from "@mui/material";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import React, { useMemo } from "react";
@@ -9,7 +9,9 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
 
 import { Layout } from "src/components/layout/Layout";
+import { config } from "src/lib/siteConfig";
 import createEmotionCache from "src/lib/styles/createEmotionCache";
+import theme from "src/lib/styles/theme";
 import { isTouch } from "src/lib/supports";
 import "src/styles/globals.css";
 
@@ -34,14 +36,22 @@ export default function MyApp({
     return (
         <DndProvider backend={touchBackend}>
             <CacheProvider value={emotionCache}>
-                <CssBaseline />
-                <Layout>
-                    <Head>
-                        <title>pdfgroup</title>
-                        <meta name="description" content="Let's get started grouping some PDFs!" />
-                    </Head>
-                    <Component {...pageProps} />
-                </Layout>
+                <ThemeProvider theme={theme}>
+                    <CssBaseline />
+                    <Layout>
+                        <Head>
+                            <title>{config.title}</title>
+                            <meta name="description" content={config.description} />
+
+                            <meta name="og:title" content={config.title} />
+                            <meta name="og:type" content="website" />
+                            <meta name="og:description" content={config.description} />
+
+                            <meta name="theme-color" content={theme.palette.primary.main} />
+                        </Head>
+                        <Component {...pageProps} />
+                    </Layout>
+                </ThemeProvider>
             </CacheProvider>
         </DndProvider>
     );
