@@ -250,35 +250,43 @@ export function SplitApp() {
 
             <Box pt={2} pb={16}>
                 <Box mb={2}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Stack direction="row" spacing={1}>
+                    <Stack
+                        direction={{ xs: "column", sm: "row" }}
+                        justifyContent="space-between"
+                        alignItems="center"
+                        spacing={3}
+                    >
+                        <Stack direction={{ xs: "column", sm: "row" }} spacing={1}>
                             <FormControl variant="outlined">
                                 <InputLabel htmlFor="document-title">Folder Name</InputLabel>
                                 <OutlinedInput
                                     id="document-title"
                                     value={environment.label}
+                                    autoComplete="off"
                                     onChange={(e) => renameEnvironment(e.target.value)}
                                     label="Folder Name"
                                 />
                             </FormControl>
-                            <LoadingButton
-                                variant="contained"
-                                startIcon={<DownloadIcon />}
-                                onClick={download}
-                                loading={isDownloading}
-                            >
-                                Export folder
-                            </LoadingButton>
 
-                            <Button
-                                variant="outlined"
-                                startIcon={<FileUploadIcon />}
-                                onClick={() => fileDialog({ accept: ".pdf" }).then((files) => importFile(files[0]))}
-                            >
-                                Import PDF
-                            </Button>
+                            <Stack direction="row" spacing={1} height={56}>
+                                <LoadingButton
+                                    variant="contained"
+                                    startIcon={<DownloadIcon />}
+                                    onClick={download}
+                                    loading={isDownloading}
+                                >
+                                    Export folder
+                                </LoadingButton>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<FileUploadIcon />}
+                                    onClick={() => fileDialog({ accept: ".pdf" }).then((files) => importFile(files[0]))}
+                                >
+                                    Import PDF
+                                </Button>
+                            </Stack>
                         </Stack>
-                        <Stack>
+                        <Stack alignSelf="flex-end">
                             <Tooltip title="Renders the document pages to images before exporting them. This may reduce file size if you have a lot of elements on your pages.">
                                 <FormControlLabel
                                     label="Flatten"

@@ -50,7 +50,7 @@ export function SplitGroupAdder({ addGroup, importFile }: SplitGroupAdderProps) 
     return (
         <Root variant="outlined" ref={drop}>
             <Stack
-                py={2}
+                p={2}
                 justifyContent="center"
                 alignItems="center"
                 sx={{ opacity: isDropping ? 0.3 : 1, transition: "opacity 0.2s" }}
@@ -60,7 +60,7 @@ export function SplitGroupAdder({ addGroup, importFile }: SplitGroupAdderProps) 
                         <AddIcon />
                     </IconButton>
                 </Tooltip>
-                <Typography mt={1} color="#777">
+                <Typography mt={1} color="#777" textAlign="center">
                     Drop documents or pages here to create a new group!
                 </Typography>
             </Stack>

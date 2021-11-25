@@ -70,13 +70,15 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
 
         return (
             <Root variant="outlined" sx={{ p: 1 }} ref={ref}>
-                <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-                    <Stack direction="row">
+                <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems="flex-start">
+                    <Stack direction="row" alignSelf="stretch">
                         <TextField
                             size="small"
                             variant="outlined"
                             value={group.label}
                             onChange={(e) => renameGroup(groupIndex, e.target.value)}
+                            autoComplete="off"
+                            fullWidth
                             InputProps={{
                                 endAdornment: <InputAdornment position="end">.pdf</InputAdornment>,
                                 sx: {
@@ -85,12 +87,17 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
                             }}
                         />
                         <Fade in={collapsed}>
-                            <Typography mx={1} color="GrayText" lineHeight="40px">
+                            <Typography
+                                mx={1}
+                                color="GrayText"
+                                lineHeight="40px"
+                                sx={{ display: { xs: "none", sm: "inline-block" }, flexShrink: 0 }}
+                            >
                                 {group.pages.length} page(s)
                             </Typography>
                         </Fade>
                     </Stack>
-                    <Stack direction="row">
+                    <Stack direction="row" alignSelf="flex-end">
                         <Tooltip title={collapsed ? "Expand" : "Collapse"}>
                             <IconButton onClick={() => setCollapsed((c) => !c)}>
                                 {collapsed ? <OpenFullIcon /> : <CloseFullIcon />}
