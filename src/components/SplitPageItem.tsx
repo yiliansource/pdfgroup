@@ -6,6 +6,7 @@ import { getEmptyImage } from "react-dnd-html5-backend";
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
 import { SplitPage } from "src/lib/pdf/splitter";
+import { PageLocation } from "src/lib/pdf/types";
 
 import { SplitPagePreview } from "./SplitPagePreview";
 
@@ -22,12 +23,16 @@ export interface SplitPageViewProps {
      * The index of the group the page is in.
      */
     groupIndex: number;
+    /**
+     * Handler function to enlarge a page for preview purposes.
+     */
+    inspectPage(source: PageLocation): void;
 }
 
 /**
  * An interactive display of a page item, located inside a group. This can be dragged and rearranged inside groups.
  */
-export function SplitPageItem({ page, pageIndex, groupIndex }: SplitPageViewProps) {
+export function SplitPageItem({ page, pageIndex, groupIndex, inspectPage }: SplitPageViewProps) {
     const [{ isDragging }, drag, preview] = useDrag(
         () => ({
             type: DragItemTypes.PAGE,
@@ -55,7 +60,12 @@ export function SplitPageItem({ page, pageIndex, groupIndex }: SplitPageViewProp
     if (!page) return null;
 
     return (
-        <Stack sx={{ position: "relative", cursor: "pointer" }} justifyContent="center" alignItems="center">
+        <Stack
+            sx={{ position: "relative", cursor: "pointer" }}
+            justifyContent="center"
+            alignItems="center"
+            onClick={() => inspectPage({ group: groupIndex, page: pageIndex })}
+        >
             <Card
                 ref={drag}
                 sx={{ opacity: isDragging ? 0.5 : 1, height: PREVIEW_PAGE_HEIGHT, width: PREVIEW_PAGE_WIDTH }}

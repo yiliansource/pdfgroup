@@ -46,6 +46,10 @@ export interface SplitGroupViewProps {
      */
     movePage(source: PageLocation, dest: PageLocation): void;
     /**
+     * Handler function to enlarge a page for preview purposes.
+     */
+    inspectPage(source: PageLocation): void;
+    /**
      * Handler function to be invoked when the user wants to move a group between two locations.
      */
     moveGroup(oldGroupIndex: number, newGroupIndex: number): void;
@@ -64,7 +68,7 @@ export interface SplitGroupViewProps {
  * pages around inside them via drag and drop.
  */
 export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewProps>(
-    ({ group, groupIndex, totalGroups, movePage, moveGroup, removeGroup, renameGroup }, ref) => {
+    ({ group, groupIndex, totalGroups, movePage, moveGroup, removeGroup, renameGroup, inspectPage }, ref) => {
         const [collapsed, setCollapsed] = useState(false);
         const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
@@ -139,7 +143,12 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
                 </Stack>
                 <Collapse in={!collapsed}>
                     <Box mt={1}>
-                        <SplitPageList pages={group.pages} groupIndex={groupIndex} movePage={movePage} />
+                        <SplitPageList
+                            pages={group.pages}
+                            groupIndex={groupIndex}
+                            movePage={movePage}
+                            inspectPage={inspectPage}
+                        />
                     </Box>
                 </Collapse>
 

@@ -25,6 +25,7 @@ import { flattenDocument } from "src/lib/pdf/pipes/flattener";
 import { SplitEnvironment, SplitGroup, SplitPage } from "src/lib/pdf/splitter";
 import { PageLocation, PDFPipeMethod } from "src/lib/pdf/types";
 
+import { InspectedPagePreview } from "./InspectedPagePreview";
 import { SplitDragLayer } from "./SplitDragLayer";
 import { SplitGroupAdder } from "./SplitGroupAdder";
 import { SplitGroupView } from "./SplitGroupView";
@@ -42,6 +43,7 @@ interface SplitterAppOptions {
  */
 export function SplitApp() {
     const [environment, setEnvironment] = useState<SplitEnvironment>(new SplitEnvironment("", []));
+    const [inspectedPage, setInspectedPage] = useState<SplitPage | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
 
@@ -248,6 +250,15 @@ export function SplitApp() {
                 <CircularProgress color="inherit" />
             </Backdrop>
 
+            <Backdrop
+                open={!!inspectedPage}
+                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                onClick={() => setInspectedPage(null)}
+            >
+                {/* TODO: Add loading indicator, either here, or in the preview. */}
+                <InspectedPagePreview page={inspectedPage || undefined} />
+            </Backdrop>
+
             <Box pt={2} pb={16}>
                 <Box mb={2}>
                     <Stack
@@ -319,6 +330,7 @@ export function SplitApp() {
                                     movePage={movePage}
                                     removeGroup={removeGroup}
                                     renameGroup={renameGroup}
+                                    inspectPage={(l) => setInspectedPage(environment.getPage(l))}
                                 />
                             </Box>
                         </Collapse>

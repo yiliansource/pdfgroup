@@ -25,12 +25,16 @@ export interface SplitPageListProps {
      * Handler function to be invoked when the user wants to move a page between two locations.
      */
     movePage(source: PageLocation, dest: PageLocation): void;
+    /**
+     * Handler function to enlarge a page for preview purposes.
+     */
+    inspectPage(source: PageLocation): void;
 }
 
 /**
  * A list view of all pages inside a group.
  */
-export function SplitPageList({ pages, groupIndex, movePage }: SplitPageListProps) {
+export function SplitPageList({ pages, groupIndex, movePage, inspectPage }: SplitPageListProps) {
     const [dropIndex, setDropIndex] = useState(0);
     const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -91,7 +95,15 @@ export function SplitPageList({ pages, groupIndex, movePage }: SplitPageListProp
             }
         }
 
-        pageList.push(<SplitPageItem key={page.id} page={page} groupIndex={groupIndex} pageIndex={index} />);
+        pageList.push(
+            <SplitPageItem
+                key={page.id}
+                page={page}
+                groupIndex={groupIndex}
+                pageIndex={index}
+                inspectPage={inspectPage}
+            />
+        );
     });
 
     if (isOver && canDrop && dropIndex >= pages.length) {
