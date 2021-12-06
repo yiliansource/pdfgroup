@@ -19,9 +19,11 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import { Box, styled } from "@mui/system";
+import { Box } from "@mui/system";
 import React, { useState } from "react";
+import { useDrop } from "react-dnd";
 
+import { DragItemTypes, PageDragInformation } from "src/lib/drag";
 import { SplitGroup } from "src/lib/pdf/splitter";
 import { PageLocation } from "src/lib/pdf/types";
 
@@ -72,9 +74,40 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
         const [collapsed, setCollapsed] = useState(false);
         const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
+        // Allow page dropping into collapsed groups.
+        const [{ isHovering }, drop] = useDrop(
+            () => ({
+                accept: DragItemTypes.PAGE,
+                collect: (monitor) => ({
+                    isHovering: !!monitor.isOver() && !!monitor.canDrop(),
+                }),
+                drop: (item: PageDragInformation) => {
+                    movePage(item.location, {
+                        group: groupIndex,
+                        page: group.pages.length,
+                    });
+                },
+                canDrop: () => collapsed,
+            }),
+            [collapsed, groupIndex]
+        );
+
         return (
-            <Root variant="outlined" sx={{ p: 1 }} ref={ref}>
-                <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" alignItems="flex-start">
+            <Card
+                variant="outlined"
+                sx={{
+                    p: 1,
+                    background: isHovering ? "#d2d2d2" : "#e8e8e8",
+                    transition: "0.2s background",
+                }}
+                ref={ref}
+            >
+                <Stack
+                    ref={drop}
+                    direction={{ xs: "column", sm: "row" }}
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                >
                     <Stack direction="row" alignSelf="stretch">
                         <TextField
                             size="small"
@@ -141,6 +174,7 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
                         </Tooltip>
                     </Stack>
                 </Stack>
+
                 <Collapse in={!collapsed}>
                     <Box mt={1}>
                         <SplitPageList
@@ -164,12 +198,8 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
                         <Button onClick={() => removeGroup(groupIndex)}>Delete Group</Button>
                     </DialogActions>
                 </Dialog>
-            </Root>
+            </Card>
         );
     }
 );
 SplitGroupView.displayName = "SplitGroupView";
-
-const Root = styled(Card)({
-    background: "#e8e8e8",
-});
