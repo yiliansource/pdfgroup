@@ -20,6 +20,8 @@ import update from "immutability-helper";
 import { useState } from "react";
 import { TransitionGroup } from "react-transition-group";
 
+import { SplitContext } from "src/lib/hooks/useSplitContext";
+import logger from "src/lib/log";
 import { PdfSource } from "src/lib/pdf/file";
 import { flattenDocument } from "src/lib/pdf/pipes/flattener";
 import { SplitEnvironment, SplitGroup, SplitPage } from "src/lib/pdf/splitter";
@@ -62,6 +64,8 @@ export function SplitApp() {
         (async function () {
             setIsImporting(true);
 
+            logger.info(`Importing ${file.name} ...`);
+
             const source = await PdfSource.fromFile(file);
             const pageIndices = (await source.toPdflibDocument()).getPageIndices();
             setEnvironment((e) =>
@@ -77,6 +81,8 @@ export function SplitApp() {
                 })
             );
 
+            logger.info(`Imported ${pageIndices.length} pages.`);
+
             setIsImporting(false);
         })();
     };
@@ -91,6 +97,8 @@ export function SplitApp() {
                 label: { $set: label },
             })
         );
+
+        logger.debug(`Renamed the environment to '${label}'.`);
     };
     /**
      * Handler function to move a page from one location to another.
@@ -130,7 +138,27 @@ export function SplitApp() {
                   });
         });
 
-        console.log(`Moved page from [${source.group}, ${source.page}] to [${dest.group}, ${dest.page}].`);
+        logger.debug(`Moved page from [${source.group}, ${source.page}] to [${dest.group}, ${dest.page}].`);
+    };
+    const inspectPage = (location: PageLocation) => {
+        setInspectedPage(environment.getPage(location));
+
+        logger.debug(`Inspected page [${location.group}, ${location.page}].`);
+    };
+    const removePage = (location: PageLocation) => {
+        setEnvironment((e) =>
+            update(e, {
+                groups: {
+                    [location.group]: {
+                        pages: {
+                            $splice: [[location.page, 1]],
+                        },
+                    },
+                },
+            })
+        );
+
+        logger.info(`Removed page [${location.group}, ${location.page}].`);
     };
     /**
      * Handler function to move a group to a specified destination index.
@@ -156,7 +184,7 @@ export function SplitApp() {
             });
         });
 
-        console.log(`Moved group from ${sourceIndex} to ${destIndex}.`);
+        logger.debug(`Moved group from ${sourceIndex} to ${destIndex}.`);
     };
     /**
      * Handler function to add a new group to the environment.
@@ -189,7 +217,7 @@ export function SplitApp() {
             }
         });
 
-        console.log(`Added a new group.`);
+        logger.debug(`Added a new group.`);
     };
     /**
      * Handler function to rename a specific group to a specific string.
@@ -207,6 +235,8 @@ export function SplitApp() {
                 },
             })
         );
+
+        logger.debug(`Renamed group ${groupIndex} to '${label}'.`);
     };
     /**
      * Handler function to remove the group at the specified index.
@@ -223,7 +253,7 @@ export function SplitApp() {
             })
         );
 
-        console.log(`Removed group ${groupIndex}.`);
+        logger.info(`Removed group ${groupIndex}.`);
     };
     /**
      * Handler function to initiate the download of the environment.
@@ -232,17 +262,31 @@ export function SplitApp() {
     const download = async () => {
         setIsDownloading(true);
 
+        logger.info("Preparing file download ...");
+
         // Determine which pipes to use.
         const pipes: PDFPipeMethod[] = [];
         if (options.flatten) pipes.push(flattenDocument);
 
         await environment.save({ pipes });
 
+        logger.info("Download successful.");
+
         setIsDownloading(false);
     };
 
     return (
-        <>
+        <SplitContext.Provider
+            value={{
+                environment,
+                movePage,
+                inspectPage,
+                removePage,
+                moveGroup,
+                renameGroup,
+                removeGroup,
+            }}
+        >
             {/* We use a custom drag layer to display custom drag preview images for items. */}
             <SplitDragLayer />
 
@@ -326,11 +370,6 @@ export function SplitApp() {
                                     group={group}
                                     groupIndex={index}
                                     totalGroups={environment.groups.length}
-                                    moveGroup={moveGroup}
-                                    movePage={movePage}
-                                    removeGroup={removeGroup}
-                                    renameGroup={renameGroup}
-                                    inspectPage={(l) => setInspectedPage(environment.getPage(l))}
                                 />
                             </Box>
                         </Collapse>
@@ -341,6 +380,6 @@ export function SplitApp() {
 
                 {/* <JsonView data={environment} filter={["id", "label", "groups", "pages", "page", "name", "source"]} /> */}
             </Box>
-        </>
+        </SplitContext.Provider>
     );
 }

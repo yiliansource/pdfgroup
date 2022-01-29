@@ -1,8 +1,9 @@
 import { Stack, Typography } from "@mui/material";
 import { Box } from "@mui/system";
+import getConfig from "next/config";
 import Image from "next/image";
 
-import { config } from "src/lib/siteConfig";
+const { publicRuntimeConfig: config } = getConfig();
 
 export function Header() {
     return (
@@ -12,8 +13,13 @@ export function Header() {
                     <Image src="/pdfgroup.svg" alt="pdfgroup Logo" height={82} width={82} draggable="false" />
                 </Box>
                 <Box>
-                    <Typography variant="h2">{config.title}</Typography>
-                    <Typography>{config.description}</Typography>
+                    <Typography variant="h2" display="inline-block">
+                        {config?.title}
+                    </Typography>
+                    <Typography variant="body2" ml={1} display="inline-block">
+                        {config?.version}
+                    </Typography>
+                    <Typography variant="body1">{config?.description}</Typography>
                 </Box>
             </Stack>
         </Box>

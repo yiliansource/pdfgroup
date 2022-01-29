@@ -24,8 +24,8 @@ import React, { useState } from "react";
 import { useDrop } from "react-dnd";
 
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
+import { useSplitContext } from "src/lib/hooks/useSplitContext";
 import { SplitGroup } from "src/lib/pdf/splitter";
-import { PageLocation } from "src/lib/pdf/types";
 
 import { SplitPageList } from "./SplitPageList";
 
@@ -42,27 +42,6 @@ export interface SplitGroupViewProps {
      * The total number of groups that will be displayed.
      */
     totalGroups: number;
-
-    /**
-     * Handler function to be invoked when the user wants to move a page between two locations.
-     */
-    movePage(source: PageLocation, dest: PageLocation): void;
-    /**
-     * Handler function to enlarge a page for preview purposes.
-     */
-    inspectPage(source: PageLocation): void;
-    /**
-     * Handler function to be invoked when the user wants to move a group between two locations.
-     */
-    moveGroup(oldGroupIndex: number, newGroupIndex: number): void;
-    /**
-     * Handler function to be invoked when the user wants to remove a group.
-     */
-    removeGroup(groupIndex: number): void;
-    /**
-     * Handler function to be invoked when the user wants to rename a group.
-     */
-    renameGroup(groupIndex: number, label: string): void;
 }
 
 /**
@@ -70,7 +49,8 @@ export interface SplitGroupViewProps {
  * pages around inside them via drag and drop.
  */
 export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewProps>(
-    ({ group, groupIndex, totalGroups, movePage, moveGroup, removeGroup, renameGroup, inspectPage }, ref) => {
+    ({ group, groupIndex, totalGroups }, ref) => {
+        const { movePage, moveGroup, removeGroup, renameGroup } = useSplitContext();
         const [collapsed, setCollapsed] = useState(false);
         const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
@@ -177,12 +157,7 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
 
                 <Collapse in={!collapsed}>
                     <Box mt={1}>
-                        <SplitPageList
-                            pages={group.pages}
-                            groupIndex={groupIndex}
-                            movePage={movePage}
-                            inspectPage={inspectPage}
-                        />
+                        <SplitPageList pages={group.pages} groupIndex={groupIndex} />
                     </Box>
                 </Collapse>
 

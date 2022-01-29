@@ -5,8 +5,8 @@ import { useDrop } from "react-dnd";
 
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_SPACING, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
+import { useSplitContext } from "src/lib/hooks/useSplitContext";
 import { SplitPage } from "src/lib/pdf/splitter";
-import { PageLocation } from "src/lib/pdf/types";
 
 import { SplitPageItem } from "./SplitPageItem";
 import { SplitPagePlaceholder } from "./SplitPagePlaceholder";
@@ -20,21 +20,13 @@ export interface SplitPageListProps {
      * The index of the group the pages are in.
      */
     groupIndex: number;
-
-    /**
-     * Handler function to be invoked when the user wants to move a page between two locations.
-     */
-    movePage(source: PageLocation, dest: PageLocation): void;
-    /**
-     * Handler function to enlarge a page for preview purposes.
-     */
-    inspectPage(source: PageLocation): void;
 }
 
 /**
  * A list view of all pages inside a group.
  */
-export function SplitPageList({ pages, groupIndex, movePage, inspectPage }: SplitPageListProps) {
+export function SplitPageList({ pages, groupIndex }: SplitPageListProps) {
+    const { movePage } = useSplitContext();
     const [dropIndex, setDropIndex] = useState(0);
     const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -53,9 +45,9 @@ export function SplitPageList({ pages, groupIndex, movePage, inspectPage }: Spli
                 });
             },
             hover: (_, monitor) => {
-                // The placeholder index is calculated as a combination of the horizontal offset, page width and spacing.
                 if (!listRef.current) throw new Error("No reference to the page list was created.");
 
+                // The placeholder index is calculated as a combination of the horizontal offset, page width and spacing.
                 const p =
                     monitor.getClientOffset()!.x -
                     (listRef.current.offsetLeft - listRef.current.parentElement!.scrollLeft);
@@ -95,15 +87,7 @@ export function SplitPageList({ pages, groupIndex, movePage, inspectPage }: Spli
             }
         }
 
-        pageList.push(
-            <SplitPageItem
-                key={page.id}
-                page={page}
-                groupIndex={groupIndex}
-                pageIndex={index}
-                inspectPage={inspectPage}
-            />
-        );
+        pageList.push(<SplitPageItem key={page.id} page={page} groupIndex={groupIndex} pageIndex={index} />);
     });
 
     if (isOver && canDrop && dropIndex >= pages.length) {

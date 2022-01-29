@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
+import logger from "src/lib/log";
 import { SplitPage } from "src/lib/pdf/splitter";
 
 export interface SplitPagePreviewProps {
@@ -40,7 +41,7 @@ export function SplitPagePreview({ page }: SplitPagePreviewProps) {
                 const imageData = renderCache.get(page.id)!;
                 ctx.putImageData(imageData, 0, 0);
 
-                console.log(`Page ${page.index} (${page.source.name}) was rendered from cache.`);
+                logger.debug(`Page ${page.index} (${page.source.name}) was rendered from cache.`);
             } else {
                 const pdfpage = await pdfjsDocument.getPage(page.index + 1); // pdf.js pages are 1-indexed.
 
@@ -62,7 +63,7 @@ export function SplitPagePreview({ page }: SplitPagePreviewProps) {
                 );
                 renderCache.set(page.id, cacheData);
 
-                console.log(`Page ${page.index} (${page.source.name}) was rendered and cached.`);
+                logger.debug(`Page ${page.index} (${page.source.name}) was rendered and cached.`);
             }
         })();
     }, [page]);
