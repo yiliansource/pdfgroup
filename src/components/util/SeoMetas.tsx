@@ -18,7 +18,7 @@ export function SeoMetas() {
             <meta name="og:title" content={config?.title} />
             <meta name="og:type" content="website" />
             <meta name="og:description" content={config?.description} />
-            <meta name="og:image" content="/pdfgroup.svg" />
+            <meta name="og:image" content="/favicon.png" />
             <meta name="theme-color" content={theme.palette?.primary.main} />
         </Head>
     );
