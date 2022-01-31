@@ -1,43 +1,43 @@
 import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
-import { LoadingButton } from "@mui/lab";
+import SettingsIcon from "@mui/icons-material/Settings";
 import {
     Backdrop,
     Button,
-    CircularProgress,
     Collapse,
     FormControl,
-    FormControlLabel,
+    IconButton,
     InputLabel,
     OutlinedInput,
     Stack,
-    Switch,
     Tooltip,
 } from "@mui/material";
 import { Box } from "@mui/system";
 import fileDialog from "file-dialog";
-import update from "immutability-helper";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { TransitionGroup } from "react-transition-group";
 
+import {
+    addGroup,
+    importFile,
+    moveGroup,
+    movePage,
+    removeGroup,
+    removePage,
+    renameEnvironment,
+    renameGroup,
+} from "src/lib/helpers";
 import { SplitContext } from "src/lib/hooks/useSplitContext";
-import logger from "src/lib/log";
-import { PdfSource } from "src/lib/pdf/file";
-import { flattenDocument } from "src/lib/pdf/pipes/flattener";
-import { SplitEnvironment, SplitGroup, SplitPage } from "src/lib/pdf/splitter";
-import { PageLocation, PDFPipeMethod } from "src/lib/pdf/types";
+import { SplitEnvironment, SplitPage } from "src/lib/pdf/splitter";
+import { PageLocation } from "src/lib/pdf/types";
 
+import { AppPreferencesDialog } from "./AppPreferencesDialog";
 import { InspectedPagePreview } from "./InspectedPagePreview";
+import { ProgressOverlay } from "./ProgressOverlay";
 import { SplitDragLayer } from "./SplitDragLayer";
+import { SplitExportDialog } from "./SplitExportDialog";
 import { SplitGroupAdder } from "./SplitGroupAdder";
 import { SplitGroupView } from "./SplitGroupView";
-
-interface SplitterAppOptions {
-    /**
-     * Whether to flatten the pages in the environment before downloading.
-     */
-    flatten: boolean;
-}
 
 /**
  * The main logic container for the splitting and grouping application.
@@ -46,253 +46,65 @@ interface SplitterAppOptions {
 export function SplitApp() {
     const [environment, setEnvironment] = useState<SplitEnvironment>(new SplitEnvironment("", []));
     const [inspectedPage, setInspectedPage] = useState<SplitPage | null>(null);
-    const [isDownloading, setIsDownloading] = useState(false);
+
     const [isImporting, setIsImporting] = useState(false);
+    const [isExportOpen, setExportOpen] = useState(false);
+    const [isPreferencesOpen, setPreferencesOpen] = useState(false);
 
-    const [options, setOptions] = useState<SplitterAppOptions>({
-        flatten: false,
-    });
-
-    /**
-     * Handler function to import a selected file into the environment.
-     *
-     * @param file The file to import.
-     */
-    const importFile = (file: File) => {
-        if (!file || !file.name.endsWith(".pdf")) return;
-
-        (async function () {
+    const importFileHandler = useCallback(
+        async (file: File) => {
             setIsImporting(true);
-
-            logger.info(`Importing ${file.name} ...`);
-
-            const source = await PdfSource.fromFile(file);
-            const pageIndices = (await source.toPdflibDocument()).getPageIndices();
-            setEnvironment((e) =>
-                update(e, {
-                    groups: {
-                        $push: [
-                            new SplitGroup(
-                                source.name,
-                                pageIndices.map((index) => new SplitPage(index, source))
-                            ),
-                        ],
-                    },
-                })
-            );
-
-            logger.info(`Imported ${pageIndices.length} pages.`);
-
+            setEnvironment(await importFile(environment, file));
             setIsImporting(false);
-        })();
+        },
+        [environment]
+    );
+    const renameEnvironmentHandler = (label: string) => {
+        setEnvironment((e) => renameEnvironment(e, label));
     };
-    /**
-     * Handler function to rename the environment to a specific string.
-     *
-     * @param label The string to rename the environment to.
-     */
-    const renameEnvironment = (label: string) => {
-        setEnvironment((e) =>
-            update(e, {
-                label: { $set: label },
-            })
-        );
-
-        logger.debug(`Renamed the environment to '${label}'.`);
+    const movePageHandler = (source: PageLocation, dest: PageLocation) => {
+        setEnvironment((e) => movePage(e, source, dest));
     };
-    /**
-     * Handler function to move a page from one location to another.
-     * This method can be used to move a page to a different group, or re-arrange it in it's current group.
-     *
-     * @param source The current location of the page, used for indexing.
-     * @param dest The desired location of the page, used for indexing.
-     */
-    const movePage = (source: PageLocation, dest: PageLocation) => {
-        // If source and destination match, don't perform any movement.
-        if (source.group === dest.group && source.page === dest.page) return;
-
-        setEnvironment((e) => {
-            // Determine the page instance to move around.
-            const page = e!.getPage(source);
-
-            return source.group === dest.group
-                ? // If we need to move around the page inside it's current group, we use two splicing transactions
-                  // on the same array. Note that the index is adjusted appropriately by the calling component.
-                  update(e, {
-                      groups: {
-                          [dest.group]: {
-                              pages: {
-                                  $splice: [
-                                      [source.page, 1],
-                                      [dest.page, 0, page],
-                                  ],
-                              },
-                          },
-                      },
-                  })
-                : update(e, {
-                      groups: {
-                          [source.group]: { pages: { $splice: [[source.page, 1]] } },
-                          [dest.group]: { pages: { $splice: [[dest.page, 0, page]] } },
-                      },
-                  });
-        });
-
-        logger.debug(`Moved page from [${source.group}, ${source.page}] to [${dest.group}, ${dest.page}].`);
+    const inspectPageHandler = useCallback(
+        (location: PageLocation) => {
+            setInspectedPage(environment.getPage(location));
+        },
+        [environment]
+    );
+    const removePageHandler = (location: PageLocation) => {
+        setEnvironment((e) => removePage(e, location));
     };
-    const inspectPage = (location: PageLocation) => {
-        setInspectedPage(environment.getPage(location));
-
-        logger.debug(`Inspected page [${location.group}, ${location.page}].`);
+    const moveGroupHandler = (sourceIndex: number, destIndex: number) => {
+        setEnvironment((e) => moveGroup(e, sourceIndex, destIndex));
     };
-    const removePage = (location: PageLocation) => {
-        setEnvironment((e) =>
-            update(e, {
-                groups: {
-                    [location.group]: {
-                        pages: {
-                            $splice: [[location.page, 1]],
-                        },
-                    },
-                },
-            })
-        );
-
-        logger.info(`Removed page [${location.group}, ${location.page}].`);
+    const addGroupHandler = (initial?: PageLocation) => {
+        setEnvironment((e) => addGroup(e, initial));
     };
-    /**
-     * Handler function to move a group to a specified destination index.
-     *
-     * @param sourceIndex The current location of the group.
-     * @param destIndex The desired location of the group.
-     */
-    const moveGroup = (sourceIndex: number, destIndex: number) => {
-        // If source and destination match, don't perform any movement.
-        if (sourceIndex === destIndex) return;
-
-        setEnvironment((e) => {
-            // Determine the group to move.
-            const group = environment.groups[sourceIndex];
-
-            return update(e, {
-                groups: {
-                    $splice: [
-                        [sourceIndex, 1],
-                        [destIndex, 0, group],
-                    ],
-                },
-            });
-        });
-
-        logger.debug(`Moved group from ${sourceIndex} to ${destIndex}.`);
+    const renameGroupHandler = (groupIndex: number, label: string) => {
+        setEnvironment((e) => renameGroup(e, groupIndex, label));
     };
-    /**
-     * Handler function to add a new group to the environment.
-     * Optionally, an initial page can be specified to be immediately moved into the group.
-     *
-     * @param initial The (optional) initial page to populate the group with.
-     */
-    const addGroup = (initial?: PageLocation) => {
-        setEnvironment((e) => {
-            // TODO: Pick appropriate group label.
-            const label = "";
-            if (initial) {
-                // Determine the page to move.
-                const page = e!.getPage(initial);
-
-                // Since we are moving a page around, we need to remove it from it's old location, before inserting
-                // it into the new, created group.
-                return update(e, {
-                    groups: {
-                        [initial.group]: { pages: { $splice: [[initial.page, 1]] } },
-                        $push: [new SplitGroup(label, [page])],
-                    },
-                });
-            } else {
-                return update(e, {
-                    groups: {
-                        $push: [new SplitGroup(label)],
-                    },
-                });
-            }
-        });
-
-        logger.debug(`Added a new group.`);
-    };
-    /**
-     * Handler function to rename a specific group to a specific string.
-     *
-     * @param groupIndex The index of the group to rename.
-     * @param label The string to rename the group to.
-     */
-    const renameGroup = (groupIndex: number, label: string) => {
-        setEnvironment((e) =>
-            update(e, {
-                groups: {
-                    [groupIndex]: {
-                        label: { $set: label },
-                    },
-                },
-            })
-        );
-
-        logger.debug(`Renamed group ${groupIndex} to '${label}'.`);
-    };
-    /**
-     * Handler function to remove the group at the specified index.
-     * Note that this simply removes it, without any warning or additional checks.
-     *
-     * @param groupIndex The index of the group to remove.
-     */
-    const removeGroup = (groupIndex: number) => {
-        setEnvironment((e) =>
-            update(e, {
-                groups: {
-                    $splice: [[groupIndex, 1]],
-                },
-            })
-        );
-
-        logger.info(`Removed group ${groupIndex}.`);
-    };
-    /**
-     * Handler function to initiate the download of the environment.
-     * This also prompts the save/download dialog.
-     */
-    const download = async () => {
-        setIsDownloading(true);
-
-        logger.info("Preparing file download ...");
-
-        // Determine which pipes to use.
-        const pipes: PDFPipeMethod[] = [];
-        if (options.flatten) pipes.push(flattenDocument);
-
-        await environment.save({ pipes });
-
-        logger.info("Download successful.");
-
-        setIsDownloading(false);
+    const removeGroupHandler = (groupIndex: number) => {
+        setEnvironment((e) => removeGroup(e, groupIndex));
     };
 
     return (
         <SplitContext.Provider
             value={{
                 environment,
-                movePage,
-                inspectPage,
-                removePage,
-                moveGroup,
-                renameGroup,
-                removeGroup,
+                movePage: movePageHandler,
+                inspectPage: inspectPageHandler,
+                removePage: removePageHandler,
+                moveGroup: moveGroupHandler,
+                renameGroup: renameGroupHandler,
+                removeGroup: removeGroupHandler,
             }}
         >
             {/* We use a custom drag layer to display custom drag preview images for items. */}
             <SplitDragLayer />
 
-            <Backdrop open={isImporting} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-                <CircularProgress color="inherit" />
-            </Backdrop>
+            <AppPreferencesDialog open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
+            <SplitExportDialog open={isExportOpen} onClose={() => setExportOpen(false)} />
+            <ProgressOverlay open={isImporting} />
 
             <Backdrop
                 open={!!inspectedPage}
@@ -318,46 +130,35 @@ export function SplitApp() {
                                     id="document-title"
                                     value={environment.label}
                                     autoComplete="off"
-                                    onChange={(e) => renameEnvironment(e.target.value)}
+                                    onChange={(e) => renameEnvironmentHandler(e.target.value)}
                                     label="Folder Name"
                                 />
                             </FormControl>
 
                             <Stack direction="row" spacing={1} height={56}>
-                                <LoadingButton
+                                <Button
                                     variant="contained"
                                     startIcon={<DownloadIcon />}
-                                    onClick={download}
-                                    loading={isDownloading}
+                                    onClick={() => setExportOpen(true)}
                                 >
                                     Export folder
-                                </LoadingButton>
+                                </Button>
                                 <Button
                                     variant="outlined"
                                     startIcon={<FileUploadIcon />}
-                                    onClick={() => fileDialog({ accept: ".pdf" }).then((files) => importFile(files[0]))}
+                                    onClick={() =>
+                                        fileDialog({ accept: ".pdf" }).then((files) => importFileHandler(files[0]))
+                                    }
                                 >
                                     Import PDF
                                 </Button>
                             </Stack>
                         </Stack>
                         <Stack alignSelf="flex-end">
-                            <Tooltip title="Renders the document pages to images before exporting them. This may reduce file size if you have a lot of elements on your pages.">
-                                <FormControlLabel
-                                    label="Flatten"
-                                    control={
-                                        <Switch
-                                            value={options.flatten}
-                                            onChange={(_, c) =>
-                                                setOptions((o) =>
-                                                    update(o, {
-                                                        flatten: { $set: c },
-                                                    })
-                                                )
-                                            }
-                                        />
-                                    }
-                                />
+                            <Tooltip title="Settings">
+                                <IconButton onClick={() => setPreferencesOpen(true)}>
+                                    <SettingsIcon />
+                                </IconButton>
                             </Tooltip>
                         </Stack>
                     </Stack>
@@ -376,9 +177,7 @@ export function SplitApp() {
                     ))}
                 </TransitionGroup>
 
-                <SplitGroupAdder addGroup={addGroup} importFile={importFile} />
-
-                {/* <JsonView data={environment} filter={["id", "label", "groups", "pages", "page", "name", "source"]} /> */}
+                <SplitGroupAdder addGroup={addGroupHandler} importFile={importFileHandler} />
             </Box>
         </SplitContext.Provider>
     );

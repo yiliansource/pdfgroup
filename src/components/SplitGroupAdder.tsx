@@ -1,5 +1,6 @@
 import AddIcon from "@mui/icons-material/Add";
-import { Card, IconButton, Stack, Tooltip, Typography } from "@mui/material";
+import { IconButton, Paper, Stack, Tooltip, Typography } from "@mui/material";
+import { grey } from "@mui/material/colors";
 import { styled } from "@mui/system";
 import { useDrop } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
@@ -85,8 +86,8 @@ export function SplitGroupAdder({ addGroup, importFile }: SplitGroupAdderProps) 
     );
 }
 
-const Root = styled(Card)({
-    border: "2px dashed #ddd",
+const Root = styled(Paper)(({ theme }) => ({
+    border: `2px dashed ${theme.palette.mode === "light" ? grey[300] : grey[800]}`,
     transition: "background 0.2s",
     position: "relative",
-});
+}));

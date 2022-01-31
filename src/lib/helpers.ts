@@ -1,0 +1,227 @@
+import update from "immutability-helper";
+
+import { Settings } from "./hooks/useSettings";
+import logger from "./log";
+import { PdfSource } from "./pdf/file";
+import { flattenDocument } from "./pdf/pipes/flattener";
+import { SplitEnvironment, SplitGroup, SplitPage } from "./pdf/splitter";
+import { PageLocation, PDFPipeMethod } from "./pdf/types";
+
+/**
+ * Imports a specified file into the specified environment.
+ *
+ * @param file The file to import.
+ */
+export async function importFile(env: SplitEnvironment, file: File): Promise<SplitEnvironment> {
+    if (!file || !file.name.endsWith(".pdf")) return env;
+
+    logger.info(`Importing ${file.name} ...`);
+
+    const source = await PdfSource.fromFile(file);
+    const pageIndices = (await source.toPdflibDocument()).getPageIndices();
+    env = update(env, {
+        groups: {
+            $push: [
+                new SplitGroup(
+                    source.name,
+                    pageIndices.map((index) => new SplitPage(index, source))
+                ),
+            ],
+        },
+    });
+
+    logger.info(`Imported ${pageIndices.length} pages.`);
+
+    return env;
+}
+
+/**
+ * Renames the specified environment to the specified label.
+ *
+ * @param label The string to rename the environment to.
+ */
+export function renameEnvironment(env: SplitEnvironment, label: string): SplitEnvironment {
+    env = update(env, { label: { $set: label } });
+
+    logger.debug(`Renamed the environment to '${label}'.`);
+
+    return env;
+}
+
+/**
+ * Moves a page from one location to another.
+ * This method can be used to move a page to a different group, or re-arrange it in it's current group.
+ *
+ * @param source The current location of the page, used for indexing.
+ * @param dest The desired location of the page, used for indexing.
+ */
+export function movePage(env: SplitEnvironment, source: PageLocation, dest: PageLocation): SplitEnvironment {
+    // If source and destination match, don't perform any movement.
+    if (source.group === dest.group && source.page === dest.page) return env;
+
+    // Determine the page instance to move around.
+    const page = env.getPage(source);
+
+    env =
+        source.group === dest.group
+            ? // If we need to move around the page inside it's current group, we use two splicing transactions
+              // on the same array. Note that the index is adjusted appropriately by the calling component.
+              update(env, {
+                  groups: {
+                      [dest.group]: {
+                          pages: {
+                              $splice: [
+                                  [source.page, 1],
+                                  [dest.page, 0, page],
+                              ],
+                          },
+                      },
+                  },
+              })
+            : update(env, {
+                  groups: {
+                      [source.group]: { pages: { $splice: [[source.page, 1]] } },
+                      [dest.group]: { pages: { $splice: [[dest.page, 0, page]] } },
+                  },
+              });
+
+    logger.debug(`Moved page from [${source.group}, ${source.page}] to [${dest.group}, ${dest.page}].`);
+
+    return env;
+}
+
+/**
+ * Removes the page at the specified location from the environment.
+ *
+ * @param location The location at which to remove the page.
+ */
+export function removePage(env: SplitEnvironment, location: PageLocation): SplitEnvironment {
+    env = update(env, {
+        groups: {
+            [location.group]: {
+                pages: {
+                    $splice: [[location.page, 1]],
+                },
+            },
+        },
+    });
+
+    logger.debug(`Removed page [${location.group}, ${location.page}].`);
+
+    return env;
+}
+
+/**
+ * Moves a group to a specified destination index.
+ *
+ * @param sourceIndex The current location of the group.
+ * @param destIndex The desired location of the group.
+ */
+export function moveGroup(env: SplitEnvironment, sourceIndex: number, destIndex: number): SplitEnvironment {
+    // If source and destination match, don't perform any movement.
+    if (sourceIndex === destIndex) return env;
+
+    // Determine the group to move.
+    const group = env.groups[sourceIndex];
+
+    env = update(env, {
+        groups: {
+            $splice: [
+                [sourceIndex, 1],
+                [destIndex, 0, group],
+            ],
+        },
+    });
+
+    logger.debug(`Moved group from ${sourceIndex} to ${destIndex}.`);
+
+    return env;
+}
+
+/**
+ * Adds a new group to the environment.
+ * Optionally, an initial page can be specified to be immediately moved into the group.
+ *
+ * @param initial The (optional) initial page to populate the group with.
+ */
+export function addGroup(env: SplitEnvironment, initial?: PageLocation): SplitEnvironment {
+    // TODO: Pick appropriate group label.
+    const label = "";
+    if (initial) {
+        // Determine the page to move.
+        const page = env.getPage(initial);
+
+        // Since we are moving a page around, we need to remove it from it's old location, before inserting
+        // it into the new, created group.
+        env = update(env, {
+            groups: {
+                [initial.group]: { pages: { $splice: [[initial.page, 1]] } },
+                $push: [new SplitGroup(label, [page])],
+            },
+        });
+    } else {
+        env = update(env, {
+            groups: {
+                $push: [new SplitGroup(label)],
+            },
+        });
+    }
+
+    logger.debug(`Added a new group.`);
+
+    return env;
+}
+
+/**
+ * Renames a specific group to a specific string.
+ *
+ * @param groupIndex The index of the group to rename.
+ * @param label The string to rename the group to.
+ */
+export function renameGroup(env: SplitEnvironment, groupIndex: number, label: string): SplitEnvironment {
+    env = update(env, {
+        groups: {
+            [groupIndex]: {
+                label: { $set: label },
+            },
+        },
+    });
+
+    logger.debug(`Renamed group ${groupIndex} to '${label}'.`);
+
+    return env;
+}
+
+/**
+ * Removes the group at the specified index.
+ * Note that this simply removes it, without any warning or additional checks.
+ *
+ * @param groupIndex The index of the group to remove.
+ */
+export function removeGroup(env: SplitEnvironment, groupIndex: number): SplitEnvironment {
+    env = update(env, {
+        groups: {
+            $splice: [[groupIndex, 1]],
+        },
+    });
+
+    logger.debug(`Removed group ${groupIndex}.`);
+
+    return env;
+}
+
+/**
+ * Initiates the download of the environment.
+ * This also prompts a save/download dialog.
+ */
+export async function download(env: SplitEnvironment, exportOptions: Settings["exportOptions"]) {
+    logger.info("Preparing file download ...");
+
+    // Determine which pipes to use.
+    const pipes: PDFPipeMethod[] = [];
+    if (exportOptions.flatten) pipes.push(flattenDocument);
+
+    await env.save({ pipes });
+
+    logger.info("Download successful.");
+}

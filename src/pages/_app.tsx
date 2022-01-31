@@ -1,21 +1,20 @@
 import { CacheProvider } from "@emotion/react";
 import { EmotionCache } from "@emotion/utils";
-import { CssBaseline, ThemeProvider } from "@mui/material";
+import { CssBaseline } from "@mui/material";
 import type { AppProps } from "next/app";
-import getConfig from "next/config";
 import Head from "next/head";
 import React, { useMemo } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
 
+import { SeoMetas } from "src/components/SeoMetas";
 import { Layout } from "src/components/layout/Layout";
+import { SettingsProvider } from "src/lib/hooks/useSettings";
 import createEmotionCache from "src/lib/styles/createEmotionCache";
-import theme from "src/lib/styles/theme";
+import { ThemeProvider } from "src/lib/styles/theme";
 import { isTouch } from "src/lib/supports";
 import "src/styles/globals.css";
-
-const { publicRuntimeConfig: config } = getConfig();
 
 // Initialize the pdf.js worker via the appropriate CDN endpoint.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -38,22 +37,17 @@ export default function MyApp({
     return (
         <DndProvider backend={touchBackend}>
             <CacheProvider value={emotionCache}>
-                <ThemeProvider theme={theme}>
-                    <CssBaseline />
-                    <Layout>
-                        <Head>
-                            <title>{config?.title}</title>
-                            <meta name="description" content={config?.description} />
-
-                            <meta name="og:title" content={config?.title} />
-                            <meta name="og:type" content="website" />
-                            <meta name="og:description" content={config?.description} />
-
-                            <meta name="theme-color" content={theme.palette.primary.main} />
-                        </Head>
-                        <Component {...pageProps} />
-                    </Layout>
-                </ThemeProvider>
+                <SettingsProvider>
+                    <ThemeProvider>
+                        <CssBaseline enableColorScheme />
+                        <Layout>
+                            <Head>
+                                <SeoMetas />
+                            </Head>
+                            <Component {...pageProps} />
+                        </Layout>
+                    </ThemeProvider>
+                </SettingsProvider>
             </CacheProvider>
         </DndProvider>
     );

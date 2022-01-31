@@ -1,3 +1,4 @@
+import { useTheme } from "@emotion/react";
 import ArrowDownward from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseFullIcon from "@mui/icons-material/CloseFullscreen";
@@ -16,9 +17,11 @@ import {
     InputAdornment,
     Stack,
     TextField,
+    Theme,
     Tooltip,
     Typography,
 } from "@mui/material";
+import { grey } from "@mui/material/colors";
 import { Box } from "@mui/system";
 import React, { useState } from "react";
 import { useDrop } from "react-dnd";
@@ -53,6 +56,7 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
         const { movePage, moveGroup, removeGroup, renameGroup } = useSplitContext();
         const [collapsed, setCollapsed] = useState(false);
         const [showDeleteWarning, setShowDeleteWarning] = useState(false);
+        const isDarkTheme = (useTheme() as Theme).palette.mode === "dark";
 
         // Allow page dropping into collapsed groups.
         const [{ isHovering }, drop] = useDrop(
@@ -77,7 +81,7 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
                 variant="outlined"
                 sx={{
                     p: 1,
-                    background: isHovering ? "#d2d2d2" : "#e8e8e8",
+                    background: !isHovering ? grey[isDarkTheme ? 800 : 300] : grey[isDarkTheme ? 700 : 400],
                     transition: "0.2s background",
                 }}
                 ref={ref}
@@ -99,7 +103,7 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
                             InputProps={{
                                 endAdornment: <InputAdornment position="end">.pdf</InputAdornment>,
                                 sx: {
-                                    background: "white",
+                                    background: isDarkTheme ? grey[900] : grey[100],
                                 },
                             }}
                         />
