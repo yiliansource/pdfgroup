@@ -1,6 +1,7 @@
 import { PDFDocument as PDFLibDocument } from "pdf-lib";
 import * as PDFJS from "pdfjs-dist/build/pdf";
 
+import { removeExtension } from "../io/ext";
 import { readFile } from "../io/read";
 import { IPdfDocumentConvertable, PDFJsDocument } from "./types";
 
@@ -30,6 +31,6 @@ export class PdfSource implements IPdfDocumentConvertable {
      */
     public static async fromFile(file: File): Promise<PdfSource> {
         const content = await readFile(file);
-        return new PdfSource(file.name, content);
+        return new PdfSource(removeExtension(file.name), content);
     }
 }

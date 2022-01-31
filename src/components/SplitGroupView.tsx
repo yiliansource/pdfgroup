@@ -76,6 +76,19 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
             [collapsed, groupIndex]
         );
 
+        const handleLabelKeyDown = (e: React.KeyboardEvent) => {
+            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                e.preventDefault();
+
+                const inputs = Array.from(document.querySelectorAll<HTMLElement>(".group-label-input"));
+                const index = inputs.indexOf(e.currentTarget as HTMLElement) + (e.key === "ArrowDown" ? 1 : -1);
+
+                if (index >= 0 && inputs.length > index) {
+                    inputs[index].querySelector("input")!.focus();
+                }
+            }
+        };
+
         return (
             <Card
                 variant="outlined"
@@ -97,7 +110,9 @@ export const SplitGroupView = React.forwardRef<HTMLDivElement, SplitGroupViewPro
                             size="small"
                             variant="outlined"
                             value={group.label}
+                            className="group-label-input"
                             onChange={(e) => renameGroup(groupIndex, e.target.value)}
+                            onKeyDown={handleLabelKeyDown}
                             autoComplete="off"
                             fullWidth
                             InputProps={{
