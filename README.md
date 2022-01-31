@@ -1,4 +1,19 @@
-# pdfgroup
+<h1 align="center">
+    <img src="./public/pdfgroup.svg" width="72" />
+    <br>
+    pdfgroup
+</h1>
+
+<div align="center">
+    <h4>
+        <a href="https://pdfgroup.vercel.app/">
+            <img src="https://img.shields.io/github/deployments/yiliansource/pdfgroup/production?label=vercel&logo=vercel&logoColor=white"/>
+        </a>
+        <a href="https://github.com/yiliansource/pdfgroup/commits/main">
+            <img src="https://img.shields.io/github/last-commit/yiliansource/pdfgroup"/>
+        </a>
+    </h4>
+</div>
 
 A modern web application, used to split, organize and group PDF pages into different PDF documents.
 
