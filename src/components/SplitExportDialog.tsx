@@ -1,17 +1,6 @@
 import DownloadIcon from "@mui/icons-material/Download";
 import { LoadingButton } from "@mui/lab";
-import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-    List,
-    ListItem,
-    ListItemText,
-    Switch,
-} from "@mui/material";
+import { Button, Dialog, DialogActions, DialogTitle, List, ListItem, ListItemText, Switch } from "@mui/material";
 import update from "immutability-helper";
 import { useCallback, useState } from "react";
 
