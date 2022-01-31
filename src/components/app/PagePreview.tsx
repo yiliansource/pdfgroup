@@ -2,13 +2,13 @@ import { useEffect, useRef } from "react";
 
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import logger from "src/lib/log";
-import { SplitPage } from "src/lib/pdf/splitter";
+import { Page } from "src/lib/pdf/group";
 
-export interface SplitPagePreviewProps {
+export interface PagePreviewProps {
     /**
      * The page that a preview should be rendered for.
      */
-    page: SplitPage;
+    page: Page;
 }
 
 // A cache that preview rendering data should be stored in.
@@ -19,7 +19,7 @@ const qualityScale = 2;
 /**
  * A rendered preview of a single page in a PDF.
  */
-export function SplitPagePreview({ page }: SplitPagePreviewProps) {
+export function PagePreview({ page }: PagePreviewProps) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     useEffect(() => {

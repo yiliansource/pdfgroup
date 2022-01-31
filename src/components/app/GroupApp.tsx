@@ -1,17 +1,7 @@
 import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SettingsIcon from "@mui/icons-material/Settings";
-import {
-    Backdrop,
-    Button,
-    Collapse,
-    FormControl,
-    IconButton,
-    InputLabel,
-    OutlinedInput,
-    Stack,
-    Tooltip,
-} from "@mui/material";
+import { Button, Collapse, FormControl, IconButton, InputLabel, OutlinedInput, Stack, Tooltip } from "@mui/material";
 import { Box } from "@mui/system";
 import fileDialog from "file-dialog";
 import { useCallback, useState } from "react";
@@ -27,25 +17,30 @@ import {
     renameEnvironment,
     renameGroup,
 } from "src/lib/helpers";
-import { SplitContext } from "src/lib/hooks/useSplitContext";
-import { SplitEnvironment, SplitPage } from "src/lib/pdf/splitter";
+import { GroupContext } from "src/lib/hooks/useGroupContext";
+import { GroupEnvironment, Page } from "src/lib/pdf/group";
 import { PageLocation } from "src/lib/pdf/types";
 
-import { AppPreferencesDialog } from "./AppPreferencesDialog";
-import { InspectedPagePreview } from "./InspectedPagePreview";
-import { ProgressOverlay } from "./ProgressOverlay";
-import { SplitDragLayer } from "./SplitDragLayer";
-import { SplitExportDialog } from "./SplitExportDialog";
-import { SplitGroupAdder } from "./SplitGroupAdder";
-import { SplitGroupView } from "./SplitGroupView";
+import { SitePreferencesDialog } from "../SitePreferencesDialog";
+import { ProgressOverlay } from "../util/ProgressOverlay";
+import { GroupAdder } from "./GroupAdder";
+import { GroupDragLayer } from "./GroupDragLayer";
+import { GroupExportDialog } from "./GroupExportDialog";
+import { GroupPageOverlayPreview } from "./GroupPageOverlayPreview";
+import { GroupView } from "./GroupView";
+
+// Initialize the pdf.js worker via the appropriate CDN endpoint.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pdfjs = require("pdfjs-dist/build/pdf");
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 /**
  * The main logic container for the splitting and grouping application.
- * This component handles the SplitEnvironment and manages it's state appropriately.
+ * This component handles the GroupEnvironment and manages it's state appropriately.
  */
-export function SplitApp() {
-    const [environment, setEnvironment] = useState<SplitEnvironment>(new SplitEnvironment("", []));
-    const [inspectedPage, setInspectedPage] = useState<SplitPage | null>(null);
+export function GroupApp() {
+    const [environment, setEnvironment] = useState<GroupEnvironment>(new GroupEnvironment("", []));
+    const [inspectedPage, setInspectedPage] = useState<Page | null>(null);
 
     const [isImporting, setIsImporting] = useState(false);
     const [isExportOpen, setExportOpen] = useState(false);
@@ -88,7 +83,7 @@ export function SplitApp() {
     };
 
     return (
-        <SplitContext.Provider
+        <GroupContext.Provider
             value={{
                 environment,
                 movePage: movePageHandler,
@@ -100,20 +95,16 @@ export function SplitApp() {
             }}
         >
             {/* We use a custom drag layer to display custom drag preview images for items. */}
-            <SplitDragLayer />
+            <GroupDragLayer />
 
-            <AppPreferencesDialog open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
-            <SplitExportDialog open={isExportOpen} onClose={() => setExportOpen(false)} />
+            <SitePreferencesDialog open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
+            <GroupExportDialog open={isExportOpen} onClose={() => setExportOpen(false)} />
             <ProgressOverlay open={isImporting} />
-
-            <Backdrop
+            <GroupPageOverlayPreview
                 open={!!inspectedPage}
-                sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-                onClick={() => setInspectedPage(null)}
-            >
-                {/* TODO: Add loading indicator, either here, or in the preview. */}
-                <InspectedPagePreview page={inspectedPage || undefined} />
-            </Backdrop>
+                page={inspectedPage || undefined}
+                onClose={() => setInspectedPage(null)}
+            />
 
             <Box pt={2} pb={16}>
                 <Box mb={2}>
@@ -163,22 +154,19 @@ export function SplitApp() {
                         </Stack>
                     </Stack>
                 </Box>
+
                 <TransitionGroup>
                     {environment.groups.map((group, index) => (
                         <Collapse key={group.id}>
                             <Box mb={1}>
-                                <SplitGroupView
-                                    group={group}
-                                    groupIndex={index}
-                                    totalGroups={environment.groups.length}
-                                />
+                                <GroupView group={group} groupIndex={index} totalGroups={environment.groups.length} />
                             </Box>
                         </Collapse>
                     ))}
                 </TransitionGroup>
 
-                <SplitGroupAdder addGroup={addGroupHandler} importFile={importFileHandler} />
+                <GroupAdder addGroup={addGroupHandler} importFile={importFileHandler} />
             </Box>
-        </SplitContext.Provider>
+        </GroupContext.Provider>
     );
 }

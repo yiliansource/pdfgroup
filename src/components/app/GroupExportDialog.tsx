@@ -1,21 +1,34 @@
 import DownloadIcon from "@mui/icons-material/Download";
 import { LoadingButton } from "@mui/lab";
-import { Button, Dialog, DialogActions, DialogTitle, List, ListItem, ListItemText, Switch } from "@mui/material";
+import {
+    Alert,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    List,
+    ListItem,
+    ListItemText,
+    Switch,
+} from "@mui/material";
 import update from "immutability-helper";
 import { useCallback, useState } from "react";
 
 import { download } from "src/lib/helpers";
+import { useGroupContext } from "src/lib/hooks/useGroupContext";
 import { useSettings } from "src/lib/hooks/useSettings";
-import { useSplitContext } from "src/lib/hooks/useSplitContext";
 
-export interface SplitExportDialogProps {
+export interface GroupExportDialogProps {
     open: boolean;
-
     onClose?(): void;
 }
 
-export function SplitExportDialog({ open, onClose }: SplitExportDialogProps) {
-    const { environment } = useSplitContext();
+/**
+ * A dialog window that allows to export the environment to a file using options specified by the user.
+ */
+export function GroupExportDialog({ open, onClose }: GroupExportDialogProps) {
+    const { environment } = useGroupContext();
     const { exportOptions, modifySettings } = useSettings();
     const [isDownloading, setIsDownloading] = useState(false);
 
@@ -29,6 +42,14 @@ export function SplitExportDialog({ open, onClose }: SplitExportDialogProps) {
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>Export Folder</DialogTitle>
+            <DialogContent>
+                {environment.groups.length === 0 && <Alert severity="error">There are no groups to export.</Alert>}
+                {environment.groups.some((g) => g.pages.length === 0) && (
+                    <Alert severity="warning">
+                        There are groups with no pages inside, these will be ignored during the export.
+                    </Alert>
+                )}
+            </DialogContent>
             <List>
                 <ListItem>
                     <ListItemText
@@ -50,6 +71,7 @@ export function SplitExportDialog({ open, onClose }: SplitExportDialogProps) {
                     startIcon={<DownloadIcon />}
                     onClick={downloadHandler}
                     loading={isDownloading}
+                    disabled={environment.groups.length === 0}
                 >
                     Export
                 </LoadingButton>

@@ -5,15 +5,15 @@ import { useDragLayer, XYCoord } from "react-dnd";
 
 import { PREVIEW_PAGE_HEIGHT } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
-import { SplitPage } from "src/lib/pdf/splitter";
+import { Page } from "src/lib/pdf/group";
 
-import { SplitPagePreview } from "./SplitPagePreview";
+import { PagePreview } from "./PagePreview";
 
 /**
  * A custom drag layer, used primarily for rendering a custom document page preview when dragging. This is
  * enabled on both desktop and mobile devices.
  */
-export function SplitDragLayer() {
+export function GroupDragLayer() {
     const { item, itemType, currentOffset, isDragging } = useDragLayer((monitor) => ({
         item: monitor.getItem() as PageDragInformation,
         itemType: monitor.getItemType() as DragItemTypes,
@@ -49,13 +49,13 @@ function getItemStyles(offset: XYCoord | null): CSSProperties {
 /**
  * Renders the currently dragged item to a JSX element.
  */
-function renderItem(type: DragItemTypes, item: SplitPage) {
+function renderItem(type: DragItemTypes, item: Page) {
     switch (type) {
         case DragItemTypes.PAGE:
             return (
                 <Box sx={{ position: "absolute", transform: "rotate(7deg)" }}>
                     <Card elevation={4} sx={{ height: PREVIEW_PAGE_HEIGHT }}>
-                        <SplitPagePreview page={item} />
+                        <PagePreview page={item} />
                     </Card>
                 </Box>
             );

@@ -3,8 +3,8 @@ import update from "immutability-helper";
 import { Settings } from "./hooks/useSettings";
 import logger from "./log";
 import { PdfSource } from "./pdf/file";
+import { GroupEnvironment, PageGroup, Page } from "./pdf/group";
 import { flattenDocument } from "./pdf/pipes/flattener";
-import { SplitEnvironment, SplitGroup, SplitPage } from "./pdf/splitter";
 import { PageLocation, PDFPipeMethod } from "./pdf/types";
 
 /**
@@ -12,7 +12,7 @@ import { PageLocation, PDFPipeMethod } from "./pdf/types";
  *
  * @param file The file to import.
  */
-export async function importFile(env: SplitEnvironment, file: File): Promise<SplitEnvironment> {
+export async function importFile(env: GroupEnvironment, file: File): Promise<GroupEnvironment> {
     if (!file || !file.name.endsWith(".pdf")) return env;
 
     logger.info(`Importing ${file.name} ...`);
@@ -22,9 +22,9 @@ export async function importFile(env: SplitEnvironment, file: File): Promise<Spl
     env = update(env, {
         groups: {
             $push: [
-                new SplitGroup(
+                new PageGroup(
                     source.name,
-                    pageIndices.map((index) => new SplitPage(index, source))
+                    pageIndices.map((index) => new Page(index, source))
                 ),
             ],
         },
@@ -40,7 +40,7 @@ export async function importFile(env: SplitEnvironment, file: File): Promise<Spl
  *
  * @param label The string to rename the environment to.
  */
-export function renameEnvironment(env: SplitEnvironment, label: string): SplitEnvironment {
+export function renameEnvironment(env: GroupEnvironment, label: string): GroupEnvironment {
     env = update(env, { label: { $set: label } });
 
     logger.debug(`Renamed the environment to '${label}'.`);
@@ -55,7 +55,7 @@ export function renameEnvironment(env: SplitEnvironment, label: string): SplitEn
  * @param source The current location of the page, used for indexing.
  * @param dest The desired location of the page, used for indexing.
  */
-export function movePage(env: SplitEnvironment, source: PageLocation, dest: PageLocation): SplitEnvironment {
+export function movePage(env: GroupEnvironment, source: PageLocation, dest: PageLocation): GroupEnvironment {
     // If source and destination match, don't perform any movement.
     if (source.group === dest.group && source.page === dest.page) return env;
 
@@ -95,7 +95,7 @@ export function movePage(env: SplitEnvironment, source: PageLocation, dest: Page
  *
  * @param location The location at which to remove the page.
  */
-export function removePage(env: SplitEnvironment, location: PageLocation): SplitEnvironment {
+export function removePage(env: GroupEnvironment, location: PageLocation): GroupEnvironment {
     env = update(env, {
         groups: {
             [location.group]: {
@@ -117,7 +117,7 @@ export function removePage(env: SplitEnvironment, location: PageLocation): Split
  * @param sourceIndex The current location of the group.
  * @param destIndex The desired location of the group.
  */
-export function moveGroup(env: SplitEnvironment, sourceIndex: number, destIndex: number): SplitEnvironment {
+export function moveGroup(env: GroupEnvironment, sourceIndex: number, destIndex: number): GroupEnvironment {
     // If source and destination match, don't perform any movement.
     if (sourceIndex === destIndex) return env;
 
@@ -144,7 +144,7 @@ export function moveGroup(env: SplitEnvironment, sourceIndex: number, destIndex:
  *
  * @param initial The (optional) initial page to populate the group with.
  */
-export function addGroup(env: SplitEnvironment, initial?: PageLocation): SplitEnvironment {
+export function addGroup(env: GroupEnvironment, initial?: PageLocation): GroupEnvironment {
     // TODO: Pick appropriate group label.
     const label = "";
     if (initial) {
@@ -156,13 +156,13 @@ export function addGroup(env: SplitEnvironment, initial?: PageLocation): SplitEn
         env = update(env, {
             groups: {
                 [initial.group]: { pages: { $splice: [[initial.page, 1]] } },
-                $push: [new SplitGroup(label, [page])],
+                $push: [new PageGroup(label, [page])],
             },
         });
     } else {
         env = update(env, {
             groups: {
-                $push: [new SplitGroup(label)],
+                $push: [new PageGroup(label)],
             },
         });
     }
@@ -178,7 +178,7 @@ export function addGroup(env: SplitEnvironment, initial?: PageLocation): SplitEn
  * @param groupIndex The index of the group to rename.
  * @param label The string to rename the group to.
  */
-export function renameGroup(env: SplitEnvironment, groupIndex: number, label: string): SplitEnvironment {
+export function renameGroup(env: GroupEnvironment, groupIndex: number, label: string): GroupEnvironment {
     env = update(env, {
         groups: {
             [groupIndex]: {
@@ -198,7 +198,7 @@ export function renameGroup(env: SplitEnvironment, groupIndex: number, label: st
  *
  * @param groupIndex The index of the group to remove.
  */
-export function removeGroup(env: SplitEnvironment, groupIndex: number): SplitEnvironment {
+export function removeGroup(env: GroupEnvironment, groupIndex: number): GroupEnvironment {
     env = update(env, {
         groups: {
             $splice: [[groupIndex, 1]],
@@ -214,7 +214,7 @@ export function removeGroup(env: SplitEnvironment, groupIndex: number): SplitEnv
  * Initiates the download of the environment.
  * This also prompts a save/download dialog.
  */
-export async function download(env: SplitEnvironment, exportOptions: Settings["exportOptions"]) {
+export async function download(env: GroupEnvironment, exportOptions: Settings["exportOptions"]) {
     logger.info("Preparing file download ...");
 
     // Determine which pipes to use.

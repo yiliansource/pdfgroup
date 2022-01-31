@@ -46,7 +46,7 @@ export interface IPdfjsConvertable {
 export interface IPdfDocumentConvertable extends IPdfLibConvertable, IPdfjsConvertable {}
 
 /**
- * Provides options that a split environment can be saved with.
+ * Provides options that an environment can be saved with.
  */
 export interface SaveOptions {
     /**
@@ -56,7 +56,7 @@ export interface SaveOptions {
 }
 
 /**
- * Represents the location of a page inside a split environment, as a tuple of group and page indices.
+ * Represents the location of a page inside an environment, as a tuple of group and page indices.
  */
 export type PageLocation = { group: number; page: number };
 /**

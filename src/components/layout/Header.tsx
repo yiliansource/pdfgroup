@@ -3,6 +3,8 @@ import { Box } from "@mui/system";
 import getConfig from "next/config";
 import Image from "next/image";
 
+import PDFGroupLogo from "../../../public/pdfgroup.svg";
+
 const { publicRuntimeConfig: config } = getConfig();
 
 export function Header() {
@@ -10,7 +12,7 @@ export function Header() {
         <Box component="header" my={{ xs: 4, sm: 6 }}>
             <Stack direction="row" alignItems="center">
                 <Box mx={2} sx={{ display: { xs: "none", sm: "block" } }}>
-                    <Image src="/pdfgroup.svg" alt="pdfgroup Logo" height={82} width={82} draggable="false" />
+                    <Image src={PDFGroupLogo} alt="pdfgroup Logo" height={82} width={82} draggable="false" priority />
                 </Box>
                 <Box>
                     <Typography variant="h2" display="inline-block">

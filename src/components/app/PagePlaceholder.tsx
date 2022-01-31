@@ -5,7 +5,7 @@ import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 /**
  * A placeholder that is rendered when dragging and before dropping a page item.
  */
-export function SplitPagePlaceholder() {
+export function PagePlaceholder() {
     return (
         <Box
             sx={{

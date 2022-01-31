@@ -1,19 +1,27 @@
-import { Paper } from "@mui/material";
+import { Backdrop, Paper } from "@mui/material";
 import { useEffect, useRef } from "react";
 
-import { SplitPage } from "src/lib/pdf/splitter";
+import { Page } from "src/lib/pdf/group";
 
-export interface InspectedPagePreviewProps {
+export interface GroupPageOverlayPreviewProps {
+    /**
+     * Should the overlay be open?
+     */
+    open: boolean;
     /**
      * The page that should be displayed.
      */
-    page?: SplitPage;
+    page?: Page;
+    onClose?(): void;
 }
 
 /**
  * Renders a large preview, used for page inspection and identification.
+ *
+ * @remarks
+ * Unlike the small preview, this large one is not cached, due to the larger size.
  */
-export function InspectedPagePreview({ page }: InspectedPagePreviewProps) {
+export function GroupPageOverlayPreview({ open, page, onClose }: GroupPageOverlayPreviewProps) {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     useEffect(() => {
@@ -46,9 +54,17 @@ export function InspectedPagePreview({ page }: InspectedPagePreviewProps) {
     }, [canvasRef, page]);
 
     // TODO: Unify this and the other page preview component? Since they basically do the same thing.
+
     return (
-        <Paper elevation={4} sx={{ canvas: { display: "block" } }}>
-            <canvas ref={canvasRef} onClick={(e) => e.stopPropagation()}></canvas>
-        </Paper>
+        <Backdrop
+            open={open}
+            sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+            onClick={() => onClose?.()}
+        >
+            {/* TODO: Add loading indicator? */}
+            <Paper elevation={4} sx={{ canvas: { display: "block" } }}>
+                <canvas ref={canvasRef} onClick={(e) => e.stopPropagation()}></canvas>
+            </Paper>
+        </Backdrop>
     );
 }

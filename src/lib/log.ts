@@ -38,12 +38,12 @@ class Logger {
     }
 
     private format(message: string, level: LogLevel): string {
-        const parts = [];
-        parts.push(chalk.gray("[" + new Date().toTimeString().split(" ")[0] + "]"));
-        parts.push(level.toString().toUpperCase());
-        parts.push(chalk.gray("•"));
-        parts.push(message);
-        return parts.join(" ");
+        return [
+            chalk.gray("[" + new Date().toTimeString().split(" ")[0] + "]"),
+            level.toString().toUpperCase(),
+            chalk.gray("•"),
+            message,
+        ].join(" ");
     }
 }
 

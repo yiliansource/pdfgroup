@@ -7,9 +7,9 @@ import { NativeTypes } from "react-dnd-html5-backend";
 
 import { PageLocation } from "src/lib/pdf/types";
 
-import { DragItemTypes, FileDropInformation, PageDragInformation } from "../lib/drag";
+import { DragItemTypes, FileDropInformation, PageDragInformation } from "../../lib/drag";
 
-export interface SplitGroupAdderProps {
+export interface GroupAdderProps {
     /**
      * Handler method to invoke when a group should be added.
      * Optionally, an initial page can be specified, to populate the group.
@@ -25,7 +25,7 @@ export interface SplitGroupAdderProps {
  * An app widget that allows users to add new groups by either clicking an "add" button, or by simply dragging an
  * existing page onto it.
  */
-export function SplitGroupAdder({ addGroup, importFile }: SplitGroupAdderProps) {
+export function GroupAdder({ addGroup, importFile }: GroupAdderProps) {
     const [{ isDropping }, drop] = useDrop<PageDragInformation | FileDropInformation, void, { isDropping: boolean }>(
         () => ({
             accept: [DragItemTypes.PAGE, NativeTypes.FILE],

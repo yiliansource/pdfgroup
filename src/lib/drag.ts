@@ -1,4 +1,4 @@
-import { SplitPage } from "./pdf/splitter";
+import { Page } from "./pdf/group";
 import { PageLocation } from "./pdf/types";
 
 /**
@@ -12,7 +12,7 @@ export interface PageDragInformation {
     /**
      * The underlying page object instance.
      */
-    page: SplitPage;
+    page: Page;
 }
 
 /**

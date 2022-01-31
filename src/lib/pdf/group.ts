@@ -9,11 +9,11 @@ import { IIdentifiable, ILabelled, IPdfLibConvertable, PageLocation, SaveOptions
 /**
  * An environment that holds pages that can be ordered into groups.
  */
-export class SplitEnvironment implements ILabelled {
+export class GroupEnvironment implements ILabelled {
     public label: string;
-    public groups: SplitGroup[];
+    public groups: PageGroup[];
 
-    constructor(label: string, groups: SplitGroup[]) {
+    constructor(label: string, groups: PageGroup[]) {
         this.label = label;
         this.groups = groups;
     }
@@ -53,7 +53,7 @@ export class SplitEnvironment implements ILabelled {
     /**
      * Returns the desired page in the environment, identified by a page index.
      */
-    public getPage(location: PageLocation): SplitPage {
+    public getPage(location: PageLocation): Page {
         return this.groups[location.group].pages[location.page];
     }
 }
@@ -61,12 +61,12 @@ export class SplitEnvironment implements ILabelled {
 /**
  * A group containing ordered pages, contained in an environment.
  */
-export class SplitGroup implements IIdentifiable, ILabelled, IPdfLibConvertable {
+export class PageGroup implements IIdentifiable, ILabelled, IPdfLibConvertable {
     public id: string;
     public label: string;
-    public pages: SplitPage[];
+    public pages: Page[];
 
-    constructor(label: string, pages: SplitPage[] = []) {
+    constructor(label: string, pages: Page[] = []) {
         this.id = uuidv4();
         this.label = label;
         this.pages = pages;
@@ -91,7 +91,7 @@ export class SplitGroup implements IIdentifiable, ILabelled, IPdfLibConvertable 
 /**
  * A single page contained in a group.
  */
-export class SplitPage implements IIdentifiable {
+export class Page implements IIdentifiable {
     public id: string;
     public index: number;
     public source: PdfSource;

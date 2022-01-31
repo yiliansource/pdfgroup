@@ -5,6 +5,9 @@ import Head from "next/head";
 
 const { publicRuntimeConfig: config } = getConfig();
 
+/**
+ * A utility component that adds SEO related metadata to the site's head.
+ */
 export function SeoMetas() {
     const theme = useTheme() as Theme;
 
@@ -15,6 +18,7 @@ export function SeoMetas() {
             <meta name="og:title" content={config?.title} />
             <meta name="og:type" content="website" />
             <meta name="og:description" content={config?.description} />
+            <meta name="og:image" content="/pdfgroup.svg" />
             <meta name="theme-color" content={theme.palette?.primary.main} />
         </Head>
     );

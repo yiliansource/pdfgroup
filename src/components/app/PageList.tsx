@@ -5,17 +5,17 @@ import { useDrop } from "react-dnd";
 
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_SPACING, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
-import { useSplitContext } from "src/lib/hooks/useSplitContext";
-import { SplitPage } from "src/lib/pdf/splitter";
+import { useGroupContext } from "src/lib/hooks/useGroupContext";
+import { Page } from "src/lib/pdf/group";
 
-import { SplitPageItem } from "./SplitPageItem";
-import { SplitPagePlaceholder } from "./SplitPagePlaceholder";
+import { PageItem } from "./PageItem";
+import { PagePlaceholder } from "./PagePlaceholder";
 
-export interface SplitPageListProps {
+export interface PageListProps {
     /**
      * The pages that should be displayed inside the list.
      */
-    pages: SplitPage[];
+    pages: Page[];
     /**
      * The index of the group the pages are in.
      */
@@ -25,8 +25,8 @@ export interface SplitPageListProps {
 /**
  * A list view of all pages inside a group.
  */
-export function SplitPageList({ pages, groupIndex }: SplitPageListProps) {
-    const { movePage } = useSplitContext();
+export function PageList({ pages, groupIndex }: PageListProps) {
+    const { movePage } = useGroupContext();
     const [dropIndex, setDropIndex] = useState(0);
     const listRef = useRef<HTMLDivElement | null>(null);
 
@@ -87,7 +87,7 @@ export function SplitPageList({ pages, groupIndex }: SplitPageListProps) {
             }
         }
 
-        pageList.push(<SplitPageItem key={page.id} page={page} groupIndex={groupIndex} pageIndex={index} />);
+        pageList.push(<PageItem key={page.id} page={page} groupIndex={groupIndex} pageIndex={index} />);
     });
 
     if (isOver && canDrop && dropIndex >= pages.length) {
@@ -107,5 +107,5 @@ export function SplitPageList({ pages, groupIndex }: SplitPageListProps) {
 }
 
 function getPlaceholder() {
-    return <SplitPagePlaceholder key="placeholder" />;
+    return <PagePlaceholder key="placeholder" />;
 }

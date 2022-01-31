@@ -7,16 +7,16 @@ import { getEmptyImage } from "react-dnd-html5-backend";
 
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
-import { useSplitContext } from "src/lib/hooks/useSplitContext";
-import { SplitPage } from "src/lib/pdf/splitter";
+import { useGroupContext } from "src/lib/hooks/useGroupContext";
+import { Page } from "src/lib/pdf/group";
 
-import { SplitPagePreview } from "./SplitPagePreview";
+import { PagePreview } from "./PagePreview";
 
-export interface SplitPageViewProps {
+export interface PageItemProps {
     /**
      * The page that should be displayed.
      */
-    page: SplitPage;
+    page: Page;
     /**
      * The index of the page.
      */
@@ -30,8 +30,8 @@ export interface SplitPageViewProps {
 /**
  * An interactive display of a page item, located inside a group. This can be dragged and rearranged inside groups.
  */
-export function SplitPageItem({ page, pageIndex, groupIndex }: SplitPageViewProps) {
-    const { inspectPage, removePage: deletePage } = useSplitContext();
+export function PageItem({ page, pageIndex, groupIndex }: PageItemProps) {
+    const { inspectPage, removePage: deletePage } = useGroupContext();
     const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number } | null>(null);
     const [{ isDragging }, drag, preview] = useDrag(
         () => ({
@@ -87,7 +87,7 @@ export function SplitPageItem({ page, pageIndex, groupIndex }: SplitPageViewProp
                 sx={{ opacity: isDragging ? 0.5 : 1, height: PREVIEW_PAGE_HEIGHT, width: PREVIEW_PAGE_WIDTH }}
                 onClick={handleInspect}
             >
-                <SplitPagePreview page={page} />
+                <PagePreview page={page} />
             </Card>
             <Menu
                 open={!!contextMenu}

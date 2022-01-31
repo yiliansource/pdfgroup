@@ -2,7 +2,7 @@ import { Alert } from "@mui/material";
 import { Box } from "@mui/system";
 import React from "react";
 
-import { SplitApp } from "src/components/SplitApp";
+import { GroupApp } from "src/components/app/GroupApp";
 import { isIosChrome } from "src/lib/supports";
 
 export default function Index() {
@@ -16,7 +16,7 @@ export default function Index() {
                 </Box>
             )}
 
-            <SplitApp />
+            <GroupApp />
         </>
     );
 }

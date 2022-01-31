@@ -3,13 +3,13 @@ import update from "immutability-helper";
 
 import { useSettings } from "src/lib/hooks/useSettings";
 
-export interface AppPreferencesDialogProps {
+export interface SitePreferencesDialogProps {
     open: boolean;
 
     onClose?(): void;
 }
 
-export function AppPreferencesDialog({ open, onClose }: AppPreferencesDialogProps) {
+export function SitePreferencesDialog({ open, onClose }: SitePreferencesDialogProps) {
     const { preferences, modifySettings } = useSettings();
 
     return (
@@ -17,7 +17,10 @@ export function AppPreferencesDialog({ open, onClose }: AppPreferencesDialogProp
             <DialogTitle>Preferences</DialogTitle>
             <List>
                 <ListItem>
-                    <ListItemText primary="Dark Mode" secondary="Switches to the dark theme of the application." />
+                    <ListItemText
+                        primary="Dark Theme"
+                        secondary="Enables or disables the dark theme of the application."
+                    />
                     <Switch
                         edge="end"
                         checked={preferences.theme === "dark"}
