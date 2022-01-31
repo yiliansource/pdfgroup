@@ -14,7 +14,7 @@ export function SitePreferencesDialog({ open, onClose }: SitePreferencesDialogPr
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>Preferences</DialogTitle>
+            <DialogTitle sx={{ pb: 0 }}>Preferences</DialogTitle>
             <List>
                 <ListItem>
                     <ListItemText

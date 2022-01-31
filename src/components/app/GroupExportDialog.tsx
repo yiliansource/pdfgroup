@@ -39,17 +39,23 @@ export function GroupExportDialog({ open, onClose }: GroupExportDialogProps) {
         onClose?.();
     }, [environment, exportOptions, onClose]);
 
+    const hasNoGroups = environment.groups.length === 0,
+        hasEmptyGroups = environment.groups.some((g) => g.pages.length === 0),
+        showContent = hasNoGroups || hasEmptyGroups;
+
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>Export Folder</DialogTitle>
-            <DialogContent>
-                {environment.groups.length === 0 && <Alert severity="error">There are no groups to export.</Alert>}
-                {environment.groups.some((g) => g.pages.length === 0) && (
-                    <Alert severity="warning">
-                        There are groups with no pages inside, these will be ignored during the export.
-                    </Alert>
-                )}
-            </DialogContent>
+            <DialogTitle sx={{ pb: showContent ? undefined : 0 }}>Export Folder</DialogTitle>
+            {showContent && (
+                <DialogContent sx={{ pb: 0 }}>
+                    {hasNoGroups && <Alert severity="error">There are no groups to export.</Alert>}
+                    {hasEmptyGroups && (
+                        <Alert severity="warning">
+                            There are groups with no pages inside, these will be ignored during the export.
+                        </Alert>
+                    )}
+                </DialogContent>
+            )}
             <List>
                 <ListItem>
                     <ListItemText
