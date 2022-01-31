@@ -2,7 +2,6 @@ import { CacheProvider } from "@emotion/react";
 import { EmotionCache } from "@emotion/utils";
 import { CssBaseline } from "@mui/material";
 import type { AppProps } from "next/app";
-import Head from "next/head";
 import React, { useMemo } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -41,9 +40,7 @@ export default function MyApp({
                     <ThemeProvider>
                         <CssBaseline enableColorScheme />
                         <Layout>
-                            <Head>
-                                <SeoMetas />
-                            </Head>
+                            <SeoMetas />
                             <Component {...pageProps} />
                         </Layout>
                     </ThemeProvider>
