@@ -41,36 +41,41 @@ export function GroupExportDialog({ open, onClose }: GroupExportDialogProps) {
 
     const hasNoGroups = environment.groups.length === 0,
         hasEmptyGroups = environment.groups.some((g) => g.pages.length === 0),
-        showContent = hasNoGroups || hasEmptyGroups;
+        hasDuplicateNames = environment.groups.some(
+            (g, i) => environment.groups.findIndex((f) => f.label === g.label) !== i
+        );
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle sx={{ pb: showContent ? undefined : 0 }}>Export Folder</DialogTitle>
-            {showContent && (
-                <DialogContent sx={{ pb: 0 }}>
-                    {hasNoGroups && <Alert severity="error">There are no groups to export.</Alert>}
-                    {hasEmptyGroups && (
-                        <Alert severity="warning">
-                            There are groups with no pages inside, these will be ignored during the export.
-                        </Alert>
-                    )}
-                </DialogContent>
-            )}
-            <List>
-                <ListItem>
-                    <ListItemText
-                        primary="Flatten"
-                        secondary="Renders the document pages to images before exporting them. This may reduce file size if you have a lot of elements on your pages."
-                    />
-                    <Switch
-                        edge="end"
-                        checked={exportOptions.flatten}
-                        onChange={(e, c) =>
-                            modifySettings((s) => update(s, { exportOptions: { flatten: { $set: c } } }))
-                        }
-                    />
-                </ListItem>
-            </List>
+            <DialogTitle>Export Folder</DialogTitle>
+            <DialogContent>
+                {hasNoGroups && <Alert severity="error">There are no groups to export.</Alert>}
+                {(hasEmptyGroups || hasDuplicateNames) && (
+                    <Alert severity="warning" sx={{ mb: 1, ul: { p: "0 0 0 1em", m: 0, li: { mb: 0.5 } } }}>
+                        <ul>
+                            {hasEmptyGroups && <li>There are groups with no pages inside, these will be ignored.</li>}
+                            {hasDuplicateNames && (
+                                <li>There are groups with duplicate names, these will be ignored.</li>
+                            )}
+                        </ul>
+                    </Alert>
+                )}
+                <List>
+                    <ListItem>
+                        <ListItemText
+                            primary="Flatten"
+                            secondary="Renders the document pages to images before exporting them. This may reduce file size if you have a lot of elements on your pages."
+                        />
+                        <Switch
+                            edge="end"
+                            checked={exportOptions.flatten}
+                            onChange={(e, c) =>
+                                modifySettings((s) => update(s, { exportOptions: { flatten: { $set: c } } }))
+                            }
+                        />
+                    </ListItem>
+                </List>
+            </DialogContent>
             <DialogActions>
                 <LoadingButton
                     variant="contained"

@@ -19,7 +19,7 @@ export function Header() {
                         {config?.title}
                     </Typography>
                     <Typography variant="body2" ml={1} display="inline-block">
-                        {config?.version}
+                        v{config?.version}
                     </Typography>
                     <Typography variant="body1">{config?.description}</Typography>
                 </Box>

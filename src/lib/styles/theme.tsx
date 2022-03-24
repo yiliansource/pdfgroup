@@ -28,22 +28,23 @@ export function getTheme(mode: PaletteMode): Theme {
         },
         components: {
             MuiAlert: {
+                // Adjust the background color of the alerts to be more visible when using dark mode.
                 variants: [
                     {
                         props: { severity: "info" },
-                        style: { background: "#265d84" },
+                        style: { background: mode === "dark" ? "#265d84" : undefined },
                     },
                     {
                         props: { severity: "success" },
-                        style: { background: "#295B40" },
+                        style: { background: mode === "dark" ? "#295B40" : undefined },
                     },
                     {
                         props: { severity: "error" },
-                        style: { background: "#842626" },
+                        style: { background: mode === "dark" ? "#842626" : undefined },
                     },
                     {
                         props: { severity: "warning" },
-                        style: { background: "#96600E" },
+                        style: { background: mode === "dark" ? "#96600E" : undefined },
                     },
                 ],
             },
