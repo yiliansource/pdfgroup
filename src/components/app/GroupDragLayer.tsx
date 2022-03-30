@@ -1,7 +1,8 @@
 import { Card } from "@mui/material";
 import { Box, styled } from "@mui/system";
 import { CSSProperties } from "react";
-import { useDragLayer, XYCoord } from "react-dnd";
+import { useDragDropManager, useDragLayer, XYCoord } from "react-dnd";
+import { DragDropMonitor } from "dnd-core";
 
 import { PREVIEW_PAGE_HEIGHT } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
@@ -14,17 +15,21 @@ import { PagePreview } from "./PagePreview";
  * enabled on both desktop and mobile devices.
  */
 export function GroupDragLayer() {
-    const { item, itemType, currentOffset, isDragging } = useDragLayer((monitor) => ({
+    const { item, itemType, currentOffset, clientOffset, isDragging } = useDragLayer((monitor) => ({
         item: monitor.getItem() as PageDragInformation,
         itemType: monitor.getItemType() as DragItemTypes,
         currentOffset: monitor.getSourceClientOffset(),
+        clientOffset: monitor.getClientOffset(),
         isDragging: !!monitor.isDragging(),
     }));
+    const dndMonitor = useDragDropManager().getMonitor()
 
     // If nothing is being dragged, we don't need to render a drag layer.
     if (!isDragging) {
         return null;
     }
+
+    scrollView(clientOffset, dndMonitor)
 
     return (
         <Root>
@@ -59,6 +64,26 @@ function renderItem(type: DragItemTypes, item: Page) {
                     </Card>
                 </Box>
             );
+    }
+}
+
+function scrollView(offset: XYCoord | null, dndMonitor: DragDropMonitor): void {
+    if (offset) {
+        let scroll = 0
+        const scrollRegion = Math.min(100, window.innerHeight/4)
+        if (offset.y < scrollRegion) {
+            scroll = -5 * (scrollRegion-offset.y)/scrollRegion - 1
+        } else if (window.innerHeight - offset.y < Math.min(100, window.innerHeight/4)) {
+            scroll = 5 * (scrollRegion-window.innerHeight+offset.y)/scrollRegion + 1
+        }
+        
+        if (scroll != 0) {
+            console.log(scroll)
+            window.scrollBy({top: scroll})
+            if (dndMonitor.getClientOffset() == offset) {
+                window.requestAnimationFrame(() => scrollView(offset, dndMonitor))
+            }
+        }
     }
 }
 
