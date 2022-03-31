@@ -10,6 +10,7 @@ export interface GroupEnvironmentActions {
     moveGroup(location: number, dest: number): void;
     renameGroup(index: number, value: string): void;
     removeGroup(index: number): void;
+    toggleSelect(location: PageLocation, selectionGroup?: number): void;
 }
 export interface GroupContextData extends GroupEnvironmentActions {
     environment: GroupEnvironment;

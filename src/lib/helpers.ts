@@ -210,6 +210,25 @@ export function removeGroup(env: GroupEnvironment, groupIndex: number): GroupEnv
     return env;
 }
 
+export function toggleSelect(env: GroupEnvironment, location: PageLocation, selectionGroup?: number): GroupEnvironment {
+    if (env.getPage(location).selectionGroup != undefined) {
+        selectionGroup = undefined
+    }
+    env = update(env, {
+        groups: {
+            [location.group]: {
+               pages: {
+                   [location.page]: {
+                       selectionGroup: {$set: selectionGroup}
+                   }
+               }
+            }
+        }
+    })
+
+    return env;
+}
+
 /**
  * Initiates the download of the environment.
  * This also prompts a save/download dialog.

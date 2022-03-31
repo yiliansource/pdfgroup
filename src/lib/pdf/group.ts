@@ -95,6 +95,7 @@ export class Page implements IIdentifiable {
     public id: string;
     public index: number;
     public source: PdfSource;
+    public selectionGroup?: number;
 
     constructor(page: number, source: PdfSource) {
         this.id = uuidv4();

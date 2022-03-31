@@ -16,6 +16,7 @@ import {
     removePage,
     renameEnvironment,
     renameGroup,
+    toggleSelect,
 } from "src/lib/helpers";
 import { GroupContext } from "src/lib/hooks/useGroupContext";
 import { GroupEnvironment, Page } from "src/lib/pdf/group";
@@ -81,6 +82,9 @@ export function GroupApp() {
     const removeGroupHandler = (groupIndex: number) => {
         setEnvironment((e) => removeGroup(e, groupIndex));
     };
+    const toggleSelectHandler = (location: PageLocation, selectionGroup?: number) => {
+        setEnvironment((e) => toggleSelect(e, location, selectionGroup));
+    }
 
     return (
         <GroupContext.Provider
@@ -92,6 +96,7 @@ export function GroupApp() {
                 moveGroup: moveGroupHandler,
                 renameGroup: renameGroupHandler,
                 removeGroup: removeGroupHandler,
+                toggleSelect: toggleSelectHandler,
             }}
         >
             {/* We use a custom drag layer to display custom drag preview images for items. */}
