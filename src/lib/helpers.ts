@@ -210,6 +210,52 @@ export function removeGroup(env: GroupEnvironment, groupIndex: number): GroupEnv
     return env;
 }
 
+export function toggleSelect(env: GroupEnvironment, location: PageLocation, selectionGroup?: number): GroupEnvironment {
+    if (env.getPage(location).selectionGroup != undefined) {
+        selectionGroup = undefined
+    }
+    env = update(env, {
+        groups: {
+            [location.group]: {
+               pages: {
+                   [location.page]: {
+                       selectionGroup: {$set: selectionGroup}
+                   }
+               }
+            }
+        }
+    })
+
+    return env;
+}
+
+export function moveSelectionToGroups(env: GroupEnvironment): GroupEnvironment {
+    const groups = new Map<number, Array<PageLocation>>()
+
+    env.groups.forEach((grp, gIdx) => {
+        grp.pages.forEach((page, pIdx) => {
+            if (typeof(page.selectionGroup) === "number") {
+                if (!groups.has(page.selectionGroup)) {
+                    groups.set(page.selectionGroup, [])
+                }
+                groups.get(page.selectionGroup)?.push({group: gIdx, page: pIdx})
+            }
+        })
+    });
+
+    for (const [sel, pages] of groups.entries()) {
+        env = addGroup(env);
+        const group = env.groups.length - 1;
+        for (const page of pages.reverse()) {
+            env = movePage(env, page, { group, page: env.groups[group].pages.length })
+        }
+    }
+
+    // TODO unselect
+
+    return env;
+}
+
 /**
  * Initiates the download of the environment.
  * This also prompts a save/download dialog.

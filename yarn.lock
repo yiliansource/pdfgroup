@@ -3794,6 +3794,11 @@ tr46@^1.0.1:
   dependencies:
     punycode "^2.1.0"
 
+ts-key-enum@^2.0.11:
+  version "2.0.11"
+  resolved "https://registry.yarnpkg.com/ts-key-enum/-/ts-key-enum-2.0.11.tgz#6fb18293792bcd3631c491db9f5b779a9efe60b3"
+  integrity sha512-ZYcdy6/RdwryMm2hcRT3KJanGSQREd5SDkMirdFjhWINe12wht2A26tzBqi3pxPau9Pf3Bq1C7iwzFCOfdm5yQ==
+
 tsconfig-paths@^3.11.0, tsconfig-paths@^3.9.0:
   version "3.11.0"
   resolved "https://registry.yarnpkg.com/tsconfig-paths/-/tsconfig-paths-3.11.0.tgz#954c1fe973da6339c78e06b03ce2e48810b65f36"
