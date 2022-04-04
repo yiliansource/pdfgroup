@@ -17,12 +17,15 @@ import {
     renameEnvironment,
     renameGroup,
     toggleSelect,
+    moveSelectionToGroups,
 } from "src/lib/helpers";
 import { GroupContext } from "src/lib/hooks/useGroupContext";
 import { GroupEnvironment, Page } from "src/lib/pdf/group";
 import { PageLocation } from "src/lib/pdf/types";
+import { Key } from "ts-key-enum";
 
 import { SitePreferencesDialog } from "../SitePreferencesDialog";
+import { GlobalKeyListener } from "../util/GlobalKeyListener";
 import { ProgressOverlay } from "../util/ProgressOverlay";
 import { GroupAdder } from "./GroupAdder";
 import { GroupDragLayer } from "./GroupDragLayer";
@@ -84,7 +87,10 @@ export function GroupApp() {
     };
     const toggleSelectHandler = (location: PageLocation, selectionGroup?: number) => {
         setEnvironment((e) => toggleSelect(e, location, selectionGroup));
-    }
+    };
+    const moveSelectionToGroupsHandler = () => {
+        setEnvironment((e) => moveSelectionToGroups(e));
+    };
 
     return (
         <GroupContext.Provider
@@ -97,10 +103,13 @@ export function GroupApp() {
                 renameGroup: renameGroupHandler,
                 removeGroup: removeGroupHandler,
                 toggleSelect: toggleSelectHandler,
+                moveSelectionToGroups: moveSelectionToGroupsHandler,
             }}
         >
             {/* We use a custom drag layer to display custom drag preview images for items. */}
             <GroupDragLayer />
+
+            <GlobalKeyListener keyDownListeners={{[Key.Enter]: (e: KeyboardEvent) => moveSelectionToGroupsHandler()}} />
 
             <SitePreferencesDialog open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
             <GroupExportDialog open={isExportOpen} onClose={() => setExportOpen(false)} />

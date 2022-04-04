@@ -11,6 +11,7 @@ export interface GroupEnvironmentActions {
     renameGroup(index: number, value: string): void;
     removeGroup(index: number): void;
     toggleSelect(location: PageLocation, selectionGroup?: number): void;
+    moveSelectionToGroups(): void;
 }
 export interface GroupContextData extends GroupEnvironmentActions {
     environment: GroupEnvironment;
