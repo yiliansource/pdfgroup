@@ -4,9 +4,12 @@ import { Card, ListItemIcon, ListItemText, Menu, MenuItem, Stack } from "@mui/ma
 import { useEffect, useState } from "react";
 import { useDrag } from "react-dnd";
 import { getEmptyImage } from "react-dnd-html5-backend";
+import { useSetRecoilState } from "recoil";
 
+import { inspectedPageAtom } from "src/lib/atoms/inspectedPageAtom";
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
+import { usePageActions } from "src/lib/hooks/appAction";
 import { useGroupContext } from "src/lib/hooks/useGroupContext";
 import { Page } from "src/lib/pdf/group";
 
@@ -16,48 +19,41 @@ export interface PageItemProps {
     /**
      * The page that should be displayed.
      */
-    page: Page;
-    /**
-     * The index of the page.
-     */
-    pageIndex: number;
-    /**
-     * The index of the group the page is in.
-     */
-    groupIndex: number;
+    page: string;
+    group: string;
 }
 
 /**
  * An interactive display of a page item, located inside a group. This can be dragged and rearranged inside groups.
  */
-export function PageItem({ page, pageIndex, groupIndex }: PageItemProps) {
-    const { inspectPage, removePage: deletePage } = useGroupContext();
+export function PageItem({ page, group }: PageItemProps) {
     const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number } | null>(null);
     const [{ isDragging }, drag, preview] = useDrag(
         () => ({
             type: DragItemTypes.PAGE,
             item: (): PageDragInformation => {
                 return {
-                    location: {
-                        group: groupIndex,
-                        page: pageIndex,
-                    },
-                    page: page,
+                    group,
+                    page,
                 };
             },
             collect: (monitor) => ({
                 isDragging: !!monitor.isDragging(),
             }),
         }),
-        [pageIndex, groupIndex]
+        [page, group]
     );
 
+    const pageActions = usePageActions();
+
+    const setInspectedPage = useSetRecoilState(inspectedPageAtom);
+
     const handleInspect = () => {
-        inspectPage({ group: groupIndex, page: pageIndex });
+        setInspectedPage(page);
         setContextMenu(null);
     };
     const handleDelete = () => {
-        deletePage({ group: groupIndex, page: pageIndex });
+        pageActions.remove(page);
         setContextMenu(null);
     };
     const handleContextMenu = (event: React.MouseEvent) => {
@@ -89,6 +85,7 @@ export function PageItem({ page, pageIndex, groupIndex }: PageItemProps) {
             >
                 <PagePreview page={page} />
             </Card>
+
             <Menu
                 open={!!contextMenu}
                 onClose={handleContextClose}

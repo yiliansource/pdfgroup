@@ -5,27 +5,18 @@ import { styled } from "@mui/system";
 import { useDrop } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 
-import { PageLocation } from "src/lib/pdf/types";
+import { useFileActions, useGroupActions } from "src/lib/hooks/appAction";
 
 import { DragItemTypes, FileDropInformation, PageDragInformation } from "../../lib/drag";
-
-export interface GroupAdderProps {
-    /**
-     * Handler method to invoke when a group should be added.
-     * Optionally, an initial page can be specified, to populate the group.
-     */
-    addGroup(initial?: PageLocation): void;
-    /**
-     * Handler method to import a document when it's dropped on the adder.
-     */
-    importFile(file: File): void;
-}
 
 /**
  * An app widget that allows users to add new groups by either clicking an "add" button, or by simply dragging an
  * existing page onto it.
  */
-export function GroupAdder({ addGroup, importFile }: GroupAdderProps) {
+export function GroupAdder() {
+    const groupActions = useGroupActions();
+    const fileActions = useFileActions();
+
     const [{ isDropping }, drop] = useDrop<PageDragInformation | FileDropInformation, void, { isDropping: boolean }>(
         () => ({
             accept: [DragItemTypes.PAGE, NativeTypes.FILE],
@@ -33,11 +24,12 @@ export function GroupAdder({ addGroup, importFile }: GroupAdderProps) {
                 switch (monitor.getItemType()) {
                     case DragItemTypes.PAGE:
                         item = item as PageDragInformation;
-                        addGroup(item.location);
+                        groupActions.add();
+                        // todo add dropped item
                         break;
                     case NativeTypes.FILE:
                         item = item as FileDropInformation;
-                        importFile(item.files[0]);
+                        fileActions.import(...item.files);
                         break;
                 }
             },
@@ -45,7 +37,7 @@ export function GroupAdder({ addGroup, importFile }: GroupAdderProps) {
                 isDropping: !!monitor.isOver() && !!monitor.canDrop(),
             }),
         }),
-        [addGroup, importFile]
+        []
     );
 
     return (
@@ -57,7 +49,7 @@ export function GroupAdder({ addGroup, importFile }: GroupAdderProps) {
                 sx={{ opacity: isDropping ? 0.3 : 1, transition: "opacity 0.2s" }}
             >
                 <Tooltip title="Add group">
-                    <IconButton sx={{ color: "#bbb" }} onClick={() => addGroup()}>
+                    <IconButton sx={{ color: "#bbb" }} onClick={() => groupActions.add()}>
                         <AddIcon />
                     </IconButton>
                 </Tooltip>

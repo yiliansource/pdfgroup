@@ -79,7 +79,7 @@ export class PageGroup implements IIdentifiable, ILabelled, IPdfLibConvertable {
 
         for (const page of this.pages) {
             const source = await page.source.toPdflibDocument();
-            const [sourcePage] = await doc.copyPages(source, [page.index]);
+            const [sourcePage] = await doc.copyPages(source, [page.sourceIndex]);
 
             doc.addPage(sourcePage);
         }
@@ -93,12 +93,12 @@ export class PageGroup implements IIdentifiable, ILabelled, IPdfLibConvertable {
  */
 export class Page implements IIdentifiable {
     public id: string;
-    public index: number;
     public source: PdfSource;
+    public sourceIndex: number;
 
-    constructor(page: number, source: PdfSource) {
+    constructor(pageIndex: number, source: PdfSource) {
         this.id = uuidv4();
-        this.index = page;
+        this.sourceIndex = pageIndex;
         this.source = source;
     }
 }

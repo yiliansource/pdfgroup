@@ -6,7 +6,9 @@ import React, { useMemo } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
+import { RecoilRoot } from "recoil";
 
+import { DebugObserver } from "src/components/DebugObserver";
 import { Layout } from "src/components/layout/Layout";
 import { SeoMetas } from "src/components/util/SeoMetas";
 import { SettingsProvider } from "src/lib/hooks/useSettings";
@@ -28,18 +30,21 @@ export default function MyApp({
     const touchBackend = useMemo(() => (!isTouch() ? HTML5Backend : TouchBackend), []);
 
     return (
-        <DndProvider backend={touchBackend}>
-            <CacheProvider value={emotionCache}>
-                <SettingsProvider>
-                    <ThemeProvider>
-                        <CssBaseline enableColorScheme />
-                        <Layout>
-                            <SeoMetas />
-                            <Component {...pageProps} />
-                        </Layout>
-                    </ThemeProvider>
-                </SettingsProvider>
-            </CacheProvider>
-        </DndProvider>
+        <RecoilRoot>
+            <DebugObserver />
+            <DndProvider backend={touchBackend}>
+                <CacheProvider value={emotionCache}>
+                    <SettingsProvider>
+                        <ThemeProvider>
+                            <CssBaseline enableColorScheme />
+                            <Layout>
+                                <SeoMetas />
+                                <Component {...pageProps} />
+                            </Layout>
+                        </ThemeProvider>
+                    </SettingsProvider>
+                </CacheProvider>
+            </DndProvider>
+        </RecoilRoot>
     );
 }
