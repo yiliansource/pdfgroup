@@ -22,15 +22,15 @@ export class PdfSource implements IPdfDocumentConvertable {
         return this._pdflib;
     }
     public async toPdfjsDocument(): Promise<PDFJsDocument> {
-        if (!this._pdfjs) this._pdfjs = PDFJS.getDocument(this.data).promise;
+        if (!this._pdfjs) this._pdfjs = await PDFJS.getDocument(this.data).promise;
         return this._pdfjs;
     }
 
     /**
      * Reads the specified file and returns the source file instance from it.
      */
-    public static async fromFile(file: File): Promise<PdfSource> {
+    public static async fromFile(file: File): Promise<PdfSource | null> {
         const content = await readFile(file);
-        return new PdfSource(removeExtension(file.name), content);
+        return content ? new PdfSource(removeExtension(file.name), content) : null;
     }
 }

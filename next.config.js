@@ -1,8 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+/* eslint-disable @typescript-eslint/no-var-requires */
+
+const withInterceptStdout = require("next-intercept-stdout");
+
 const { version } = require("./package.json");
 
 /** @type {import('next').NextConfig} */
-module.exports = {
+const config = {
     reactStrictMode: true,
     publicRuntimeConfig: {
         version,
@@ -11,3 +14,5 @@ module.exports = {
         githubUrl: "https://github.com/yiliansource/pdfgroup",
     },
 };
+
+module.exports = withInterceptStdout(config, (text) => (text.includes("Duplicate atom key") ? "" : text));

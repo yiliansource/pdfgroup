@@ -1,14 +1,12 @@
 import { useEffect, useRef } from "react";
+import { useRecoilValue } from "recoil";
 
+import { pageAtom } from "src/lib/atoms/pageAtom";
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import logger from "src/lib/log";
-import { Page } from "src/lib/pdf/group";
 
 export interface PagePreviewProps {
-    /**
-     * The page that a preview should be rendered for.
-     */
-    page: Page;
+    page: string;
 }
 
 // A cache that preview rendering data should be stored in.
@@ -20,13 +18,14 @@ const qualityScale = 2;
  * A rendered preview of a single page in a PDF.
  */
 export function PagePreview({ page }: PagePreviewProps) {
+    const pageInfo = useRecoilValue(pageAtom(page));
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
     useEffect(() => {
         if (!page) return;
 
         (async function () {
-            const pdfjsDocument = await page.source.toPdfjsDocument();
+            const pdfjsDocument = await pageInfo.source.toPdfjsDocument();
 
             const canvas = canvasRef.current;
             if (!canvas) throw new Error("Missing canvas reference on page preview.");
@@ -37,13 +36,13 @@ export function PagePreview({ page }: PagePreviewProps) {
             // TODO: There is a weird bug that occurs when dragging and dropping pages quickly in succession, resulting
             // in blank pages being rendered. This should be investigated and fixed.
 
-            if (renderCache.has(page.id)) {
-                const imageData = renderCache.get(page.id)!;
+            if (renderCache.has(page)) {
+                const imageData = renderCache.get(page)!;
                 ctx.putImageData(imageData, 0, 0);
 
-                logger.debug(`Page ${page.index} (${page.source.name}) was rendered from cache.`);
+                logger.debug(`Page ${page} (${pageInfo.source.name}) was rendered from cache.`);
             } else {
-                const pdfpage = await pdfjsDocument.getPage(page.index + 1); // pdf.js pages are 1-indexed.
+                const pdfpage = await pdfjsDocument.getPage(pageInfo.sourceIndex + 1); // pdf.js pages are 1-indexed.
 
                 const viewport = pdfpage.getViewport({ scale: 1 });
                 const drawViewport = viewport.clone({ scale: (PREVIEW_PAGE_WIDTH / viewport.width) * qualityScale });
@@ -61,12 +60,12 @@ export function PagePreview({ page }: PagePreviewProps) {
                     PREVIEW_PAGE_WIDTH * qualityScale,
                     PREVIEW_PAGE_HEIGHT * qualityScale
                 );
-                renderCache.set(page.id, cacheData);
+                renderCache.set(page, cacheData);
 
-                logger.debug(`Page ${page.index} (${page.source.name}) was rendered and cached.`);
+                logger.debug(`Page ${page} (${pageInfo.source.name}) was rendered and cached.`);
             }
         })();
-    }, [page]);
+    }, [page, pageInfo]);
 
     return (
         <canvas

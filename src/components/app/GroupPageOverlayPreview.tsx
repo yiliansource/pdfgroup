@@ -1,19 +1,9 @@
 import { Backdrop, Paper } from "@mui/material";
 import { useEffect, useRef } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 
-import { Page } from "src/lib/pdf/group";
-
-export interface GroupPageOverlayPreviewProps {
-    /**
-     * Should the overlay be open?
-     */
-    open: boolean;
-    /**
-     * The page that should be displayed.
-     */
-    page?: Page;
-    onClose?(): void;
-}
+import { inspectedPageAtom } from "src/lib/atoms/inspectedPageAtom";
+import { pageAtom } from "src/lib/atoms/pageAtom";
 
 /**
  * Renders a large preview, used for page inspection and identification.
@@ -21,16 +11,19 @@ export interface GroupPageOverlayPreviewProps {
  * @remarks
  * Unlike the small preview, this large one is not cached, due to the larger size.
  */
-export function GroupPageOverlayPreview({ open, page, onClose }: GroupPageOverlayPreviewProps) {
+export function GroupPageOverlayPreview() {
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+    const [inspectedPage, setInspectedPage] = useRecoilState(inspectedPageAtom);
+    const pageData = useRecoilValue(pageAtom(inspectedPage!));
+
     useEffect(() => {
-        if (!canvasRef.current || !page) return;
+        if (!canvasRef.current || !inspectedPage || !pageData) return;
 
         canvasRef.current.width = Math.min(window.innerWidth * 0.9, 600);
 
         (async function () {
-            const pdfjsDocument = await page.source.toPdfjsDocument();
+            const pdfjsDocument = await pageData.source.toPdfjsDocument();
 
             const canvas = canvasRef.current;
             if (!canvas) throw new Error("Missing canvas reference on page inspection.");
@@ -38,7 +31,7 @@ export function GroupPageOverlayPreview({ open, page, onClose }: GroupPageOverla
             const ctx = canvas.getContext("2d");
             if (!ctx) throw new Error("Missing canvas 2D context.");
 
-            const pdfpage = await pdfjsDocument.getPage(page.index + 1); // pdf.js pages are 1-indexed.
+            const pdfpage = await pdfjsDocument.getPage(pageData.sourceIndex + 1); // pdf.js pages are 1-indexed.
 
             const viewport = pdfpage.getViewport({ scale: canvas.width / pdfpage.getViewport({ scale: 1 }).width });
 
@@ -51,15 +44,15 @@ export function GroupPageOverlayPreview({ open, page, onClose }: GroupPageOverla
 
             await pdfpage.render(renderContext).promise;
         })();
-    }, [canvasRef, page]);
+    }, [canvasRef, inspectedPage, pageData]);
 
     // TODO: Unify this and the other page preview component? Since they basically do the same thing.
 
     return (
         <Backdrop
-            open={open}
+            open={!!inspectedPage}
             sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-            onClick={() => onClose?.()}
+            onClick={() => setInspectedPage(null)}
         >
             {/* TODO: Add loading indicator? */}
             <Paper elevation={4} sx={{ canvas: { display: "block" } }}>

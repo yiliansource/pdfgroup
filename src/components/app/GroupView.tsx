@@ -1,4 +1,3 @@
-import { useTheme } from "@emotion/react";
 import ArrowDownward from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseFullIcon from "@mui/icons-material/CloseFullscreen";
@@ -17,7 +16,6 @@ import {
     InputAdornment,
     Stack,
     TextField,
-    Theme,
     Tooltip,
     Typography,
 } from "@mui/material";
@@ -25,10 +23,14 @@ import { grey } from "@mui/material/colors";
 import { Box } from "@mui/system";
 import React, { useState } from "react";
 import { useDrop } from "react-dnd";
+import { useRecoilState, useRecoilValue } from "recoil";
 
+import { groupNameAtom } from "src/lib/atoms/groupNameAtom";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
-import { useGroupContext } from "src/lib/hooks/useGroupContext";
-import { PageGroup } from "src/lib/pdf/group";
+import { useGroupActions, usePageActions } from "src/lib/hooks/appActions";
+import { useThemeMode } from "src/lib/hooks/useThemeMode";
+import { groupPositionSelector } from "src/lib/selectors/groupPositionSelector";
+import { pageCountSelector } from "src/lib/selectors/pageCountSelector";
 
 import { PageList } from "./PageList";
 
@@ -36,26 +38,25 @@ export interface GroupViewProps {
     /**
      * The group that should be displayed.
      */
-    group: PageGroup;
-    /**
-     * The index of the group.
-     */
-    groupIndex: number;
-    /**
-     * The total number of groups that will be displayed.
-     */
-    totalGroups: number;
+    group: string;
 }
 
 /**
  * An interactive display of a group. The user has the ability to rearrange groups, rename them and move
  * pages around inside them via drag and drop.
  */
-export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ group, groupIndex, totalGroups }, ref) => {
-    const { movePage, moveGroup, removeGroup, renameGroup } = useGroupContext();
+export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ group }, ref) => {
+    const groupActions = useGroupActions();
+    const pageActions = usePageActions();
+
     const [collapsed, setCollapsed] = useState(false);
     const [showDeleteWarning, setShowDeleteWarning] = useState(false);
-    const isDarkTheme = (useTheme() as Theme).palette.mode === "dark";
+
+    const [groupName, setGroupName] = useRecoilState(groupNameAtom(group));
+    const pageCount = useRecoilValue(pageCountSelector(group));
+    const groupPosition = useRecoilValue(groupPositionSelector(group));
+
+    const isDarkTheme = useThemeMode() === "dark";
 
     // Allow page dropping into collapsed groups.
     const [{ isHovering }, drop] = useDrop(
@@ -65,14 +66,11 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                 isHovering: !!monitor.isOver() && !!monitor.canDrop(),
             }),
             drop: (item: PageDragInformation) => {
-                movePage(item.location, {
-                    group: groupIndex,
-                    page: group.pages.length,
-                });
+                pageActions.move(item.page, group, pageCount);
             },
             canDrop: () => collapsed,
         }),
-        [collapsed, groupIndex]
+        [group, collapsed, pageCount]
     );
 
     const handleLabelKeyDown = (e: React.KeyboardEvent) => {
@@ -108,9 +106,9 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                     <TextField
                         size="small"
                         variant="outlined"
-                        value={group.label}
+                        value={groupName}
                         className="group-label-input"
-                        onChange={(e) => renameGroup(groupIndex, e.target.value)}
+                        onChange={(e) => setGroupName(e.target.value)}
                         onKeyDown={handleLabelKeyDown}
                         autoComplete="off"
                         fullWidth
@@ -128,7 +126,7 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                             lineHeight="40px"
                             sx={{ display: { xs: "none", sm: "inline-block" }, flexShrink: 0 }}
                         >
-                            {group.pages.length} page(s)
+                            {pageCount} page(s)
                         </Typography>
                     </Fade>
                 </Stack>
@@ -141,8 +139,8 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                     <Tooltip title="Move up">
                         <span>
                             <IconButton
-                                onClick={() => moveGroup(groupIndex, groupIndex - 1)}
-                                disabled={groupIndex <= 0}
+                                onClick={() => groupActions.move(group, groupPosition.index - 1)}
+                                disabled={groupPosition.first}
                             >
                                 <ArrowUpwardIcon />
                             </IconButton>
@@ -151,8 +149,8 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                     <Tooltip title="Move down">
                         <span>
                             <IconButton
-                                onClick={() => moveGroup(groupIndex, groupIndex + 1)}
-                                disabled={groupIndex >= totalGroups - 1}
+                                onClick={() => groupActions.move(group, groupPosition.index + 1)}
+                                disabled={groupPosition.last}
                             >
                                 <ArrowDownward />
                             </IconButton>
@@ -163,7 +161,7 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                             <IconButton
                                 onClick={() =>
                                     // If the group contains items, we want to display a warning before deleting.
-                                    group.pages.length > 0 ? setShowDeleteWarning(true) : removeGroup(groupIndex)
+                                    pageCount > 0 ? setShowDeleteWarning(true) : groupActions.remove(group)
                                 }
                             >
                                 <DeleteIcon />
@@ -175,20 +173,20 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
 
             <Collapse in={!collapsed}>
                 <Box mt={1}>
-                    <PageList pages={group.pages} groupIndex={groupIndex} />
+                    <PageList group={group} />
                 </Box>
             </Collapse>
 
             <Dialog open={showDeleteWarning}>
                 <DialogContent>
                     <DialogContentText>
-                        You are about to delete a group with {group.pages.length} page(s). Once they are removed from
-                        the document you can only re-add them by importing them again.
+                        You are about to delete a group with {pageCount} page(s). Once they are removed from the
+                        document you can only re-add them by importing them again.
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setShowDeleteWarning(false)}>Cancel</Button>
-                    <Button onClick={() => removeGroup(groupIndex)}>Delete Group</Button>
+                    <Button onClick={() => groupActions.remove(group)}>Delete Group</Button>
                 </DialogActions>
             </Dialog>
         </Card>
