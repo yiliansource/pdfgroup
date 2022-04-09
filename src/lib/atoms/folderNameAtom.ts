@@ -1,6 +1,6 @@
 import { atom } from "recoil";
 
-export const environmentLabelAtom = atom({
+export const folderNameAtom = atom({
     key: "environmentLabel",
     default: "",
 });

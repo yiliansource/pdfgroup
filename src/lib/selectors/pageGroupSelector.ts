@@ -13,6 +13,6 @@ export const pageGroupSelector = selectorFamily({
                     return group;
                 }
             }
-            throw new Error();
+            throw new Error("Specified page ID was not found in any group.");
         },
 });

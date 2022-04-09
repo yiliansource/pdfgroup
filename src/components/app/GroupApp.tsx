@@ -7,7 +7,7 @@ import fileDialog from "file-dialog";
 import { useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 
-import { environmentLabelAtom } from "src/lib/atoms/environmentLabelAtom";
+import { folderNameAtom } from "src/lib/atoms/folderNameAtom";
 import { isImportingAtom } from "src/lib/atoms/isImportingAtom";
 import { useFileActions } from "src/lib/hooks/appActions";
 
@@ -29,9 +29,9 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
  * This component handles the GroupEnvironment and manages it's state appropriately.
  */
 export function GroupApp() {
-    const [environmentLabel, setEnvironmentLabel] = useRecoilState(environmentLabelAtom);
     const [isPreferencesOpen, setPreferencesOpen] = useState<boolean>(false);
     const [isExportOpen, setExportOpen] = useState<boolean>(false);
+    const [folderName, setFolderName] = useRecoilState(folderNameAtom);
 
     const isImporting = useRecoilValue(isImportingAtom);
 
@@ -44,6 +44,7 @@ export function GroupApp() {
 
             <SitePreferencesDialog open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
             <GroupExportDialog open={isExportOpen} onClose={() => setExportOpen(false)} />
+
             <ProgressOverlay open={isImporting} />
             <GroupPageOverlayPreview />
 
@@ -60,9 +61,9 @@ export function GroupApp() {
                                 <InputLabel htmlFor="environment-label">Folder Name</InputLabel>
                                 <OutlinedInput
                                     id="environment-label"
-                                    value={environmentLabel}
+                                    value={folderName}
                                     autoComplete="off"
-                                    onChange={(e) => setEnvironmentLabel(e.target.value)}
+                                    onChange={(e) => setFolderName(e.target.value)}
                                     label="Folder Name"
                                 />
                             </FormControl>

@@ -4,7 +4,7 @@ import { PDFDocument } from "pdf-lib";
 import { useRecoilCallback } from "recoil";
 import { v4 as uuidv4 } from "uuid";
 
-import { environmentLabelAtom } from "../atoms/environmentLabelAtom";
+import { folderNameAtom } from "../atoms/folderNameAtom";
 import { groupAtom } from "../atoms/groupAtom";
 import { groupNameAtom } from "../atoms/groupNameAtom";
 import { groupPagesAtom } from "../atoms/groupPagesAtom";
@@ -154,7 +154,7 @@ export function useFileActions() {
             }
 
             const content = await zip.generateAsync({ type: "blob" });
-            saveAs(content, snapshot.getLoadable(environmentLabelAtom).valueOrThrow() + ".zip");
+            saveAs(content, snapshot.getLoadable(folderNameAtom).valueOrThrow() + ".zip");
 
             logger.info("Download successful.");
         }),
