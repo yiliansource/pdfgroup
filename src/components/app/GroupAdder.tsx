@@ -5,7 +5,7 @@ import { styled } from "@mui/system";
 import { useDrop } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 
-import { useFileActions, useGroupActions } from "src/lib/hooks/appAction";
+import { useFileActions, useGroupActions } from "src/lib/hooks/appActions";
 
 import { DragItemTypes, FileDropInformation, PageDragInformation } from "../../lib/drag";
 
@@ -24,8 +24,7 @@ export function GroupAdder() {
                 switch (monitor.getItemType()) {
                     case DragItemTypes.PAGE:
                         item = item as PageDragInformation;
-                        groupActions.add();
-                        // todo add dropped item
+                        groupActions.add(item.page);
                         break;
                     case NativeTypes.FILE:
                         item = item as FileDropInformation;

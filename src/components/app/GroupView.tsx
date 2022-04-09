@@ -1,4 +1,3 @@
-import { useTheme } from "@emotion/react";
 import ArrowDownward from "@mui/icons-material/ArrowDownward";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CloseFullIcon from "@mui/icons-material/CloseFullscreen";
@@ -17,23 +16,19 @@ import {
     InputAdornment,
     Stack,
     TextField,
-    Theme,
     Tooltip,
     Typography,
 } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import { Box } from "@mui/system";
-import { RemovePageFromEmptyDocumentError } from "pdf-lib";
 import React, { useState } from "react";
 import { useDrop } from "react-dnd";
 import { useRecoilState, useRecoilValue } from "recoil";
 
 import { groupNameAtom } from "src/lib/atoms/groupNameAtom";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
-import { useGroupActions } from "src/lib/hooks/appAction";
-import { useGroupContext } from "src/lib/hooks/useGroupContext";
+import { useGroupActions, usePageActions } from "src/lib/hooks/appActions";
 import { useThemeMode } from "src/lib/hooks/useThemeMode";
-import { PageGroup } from "src/lib/pdf/group";
 import { groupPositionSelector } from "src/lib/selectors/groupPositionSelector";
 import { pageCountSelector } from "src/lib/selectors/pageCountSelector";
 
@@ -51,8 +46,8 @@ export interface GroupViewProps {
  * pages around inside them via drag and drop.
  */
 export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ group }, ref) => {
-    // const { movePage, moveGroup, removeGroup, renameGroup } = useGroupContext();
     const groupActions = useGroupActions();
+    const pageActions = usePageActions();
 
     const [collapsed, setCollapsed] = useState(false);
     const [showDeleteWarning, setShowDeleteWarning] = useState(false);
@@ -71,14 +66,11 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                 isHovering: !!monitor.isOver() && !!monitor.canDrop(),
             }),
             drop: (item: PageDragInformation) => {
-                // movePage(item.location, {
-                //     group: groupIndex,
-                //     page: group.pages.length,
-                // });
+                pageActions.move(item.page, group, pageCount);
             },
             canDrop: () => collapsed,
         }),
-        [collapsed, group]
+        [group, collapsed, pageCount]
     );
 
     const handleLabelKeyDown = (e: React.KeyboardEvent) => {
@@ -148,7 +140,7 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                         <span>
                             <IconButton
                                 onClick={() => groupActions.move(group, groupPosition.index - 1)}
-                                disabled={!groupPosition.first}
+                                disabled={groupPosition.first}
                             >
                                 <ArrowUpwardIcon />
                             </IconButton>
@@ -158,7 +150,7 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                         <span>
                             <IconButton
                                 onClick={() => groupActions.move(group, groupPosition.index + 1)}
-                                disabled={!groupPosition.last}
+                                disabled={groupPosition.last}
                             >
                                 <ArrowDownward />
                             </IconButton>

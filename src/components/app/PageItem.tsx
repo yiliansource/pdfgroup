@@ -9,9 +9,7 @@ import { useSetRecoilState } from "recoil";
 import { inspectedPageAtom } from "src/lib/atoms/inspectedPageAtom";
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
-import { usePageActions } from "src/lib/hooks/appAction";
-import { useGroupContext } from "src/lib/hooks/useGroupContext";
-import { Page } from "src/lib/pdf/group";
+import { usePageActions } from "src/lib/hooks/appActions";
 
 import { PagePreview } from "./PagePreview";
 

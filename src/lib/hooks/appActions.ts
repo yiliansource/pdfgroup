@@ -1,16 +1,22 @@
 import { arrayMoveImmutable } from "array-move";
+import JSZip from "jszip";
+import { PDFDocument } from "pdf-lib";
 import { useRecoilCallback } from "recoil";
 import { v4 as uuidv4 } from "uuid";
 
+import { environmentLabelAtom } from "../atoms/environmentLabelAtom";
 import { groupAtom } from "../atoms/groupAtom";
 import { groupNameAtom } from "../atoms/groupNameAtom";
 import { groupPagesAtom } from "../atoms/groupPagesAtom";
 import { isImportingAtom } from "../atoms/isImportingAtom";
 import { pageAtom } from "../atoms/pageAtom";
+import { Settings } from "../atoms/settingsAtom";
 import { removeExtension } from "../io/ext";
 import logger from "../log";
-import { PdfSource } from "../pdf/file";
-import { Page } from "../pdf/group";
+import { Page } from "../pdf/page";
+import { flattenDocument } from "../pdf/pipes/flattener";
+import { PdfSource } from "../pdf/soure";
+import { PDFPipeMethod } from "../pdf/types";
 import { pageGroupSelector } from "../selectors/pageGroupSelector";
 
 export function usePageActions() {
@@ -21,9 +27,11 @@ export function usePageActions() {
                     const group = snapshot.getLoadable(pageGroupSelector(page)).valueOrThrow();
 
                     if (group === destGroup) {
-                        set(groupPagesAtom(destGroup), (pages) =>
-                            arrayMoveImmutable(pages, pages.indexOf(page), destIndex)
-                        );
+                        set(groupPagesAtom(destGroup), (pages) => {
+                            const pageIndex = pages.indexOf(page);
+                            if (destIndex > pageIndex) destIndex--;
+                            return arrayMoveImmutable(pages, pages.indexOf(page), destIndex);
+                        });
                     } else {
                         set(groupPagesAtom(group), (pages) => pages.filter((p) => p !== page));
                         set(groupPagesAtom(destGroup), (pages) => [
@@ -49,9 +57,16 @@ export function usePageActions() {
 export function useGroupActions() {
     return {
         add: useRecoilCallback(
-            ({ set }) =>
-                () => {
-                    set(groupAtom, (groups) => groups.concat(uuidv4()));
+            ({ snapshot, set }) =>
+                (initialPage?: string) => {
+                    const newGroup = uuidv4();
+                    set(groupAtom, (groups) => groups.concat(newGroup));
+
+                    if (initialPage) {
+                        const group = snapshot.getLoadable(pageGroupSelector(initialPage)).valueOrThrow();
+                        set(groupPagesAtom(group), (pages) => pages.filter((p) => p !== initialPage));
+                        set(groupPagesAtom(newGroup), (pages) => pages.concat(initialPage));
+                    }
                 },
             []
         ),
@@ -105,6 +120,43 @@ export function useFileActions() {
 
             set(isImportingAtom, false);
         }),
-        export: null,
+        export: useRecoilCallback(({ snapshot }) => async (exportOptions: Settings["exportOptions"]) => {
+            logger.info("Preparing file download ...");
+
+            // Determine which pipes to use.
+            const pipes: PDFPipeMethod[] = [];
+            if (exportOptions.flatten) pipes.push(flattenDocument);
+            const zip = new JSZip();
+
+            for (const group of snapshot.getLoadable(groupAtom).valueOrThrow()) {
+                const pages = snapshot.getLoadable(groupPagesAtom(group)).valueOrThrow();
+                if (pages.length <= 0) continue;
+
+                const doc = await PDFDocument.create();
+
+                for (const page of pages) {
+                    const pageValue = snapshot.getLoadable(pageAtom(page)).valueOrThrow();
+                    const source = await pageValue.source.toPdflibDocument();
+                    const [sourcePage] = await doc.copyPages(source, [pageValue.sourceIndex]);
+
+                    doc.addPage(sourcePage);
+                }
+                if (!doc) continue;
+
+                // Send the document through all the provided pipe operations.
+                const piped = await pipes.reduce(
+                    async (piping, pipe) => await pipe(await piping),
+                    Promise.resolve(doc)
+                );
+
+                const bytes = await piped.save();
+                zip.file(snapshot.getLoadable(groupNameAtom(group)).valueOrThrow() + ".pdf", bytes);
+            }
+
+            const content = await zip.generateAsync({ type: "blob" });
+            saveAs(content, snapshot.getLoadable(environmentLabelAtom).valueOrThrow() + ".zip");
+
+            logger.info("Download successful.");
+        }),
     };
 }

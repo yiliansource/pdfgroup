@@ -1,6 +1,6 @@
 import { atomFamily } from "recoil";
 
-import { Page } from "../pdf/group";
+import { Page } from "../pdf/page";
 
 export const pageAtom = atomFamily<Page, string>({
     key: "page",

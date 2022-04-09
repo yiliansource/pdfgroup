@@ -4,7 +4,6 @@ import { useRecoilState, useRecoilValue } from "recoil";
 
 import { inspectedPageAtom } from "src/lib/atoms/inspectedPageAtom";
 import { pageAtom } from "src/lib/atoms/pageAtom";
-import { Page } from "src/lib/pdf/group";
 
 /**
  * Renders a large preview, used for page inspection and identification.

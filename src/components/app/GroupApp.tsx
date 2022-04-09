@@ -1,29 +1,15 @@
 import DownloadIcon from "@mui/icons-material/Download";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Button, Collapse, FormControl, IconButton, InputLabel, OutlinedInput, Stack, Tooltip } from "@mui/material";
+import { Button, FormControl, IconButton, InputLabel, OutlinedInput, Stack, Tooltip } from "@mui/material";
 import { Box } from "@mui/system";
 import fileDialog from "file-dialog";
-import { useCallback, useEffect, useState } from "react";
-import { TransitionGroup } from "react-transition-group";
-import { useRecoilSnapshot, useRecoilState, useRecoilValue } from "recoil";
+import { useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
 
 import { environmentLabelAtom } from "src/lib/atoms/environmentLabelAtom";
 import { isImportingAtom } from "src/lib/atoms/isImportingAtom";
-import {
-    addGroup,
-    importFile,
-    moveGroup,
-    movePage,
-    removeGroup,
-    removePage,
-    renameEnvironment,
-    renameGroup,
-} from "src/lib/helpers";
-import { useFileActions } from "src/lib/hooks/appAction";
-import { GroupContext } from "src/lib/hooks/useGroupContext";
-import { GroupEnvironment, Page } from "src/lib/pdf/group";
-import { PageLocation } from "src/lib/pdf/types";
+import { useFileActions } from "src/lib/hooks/appActions";
 
 import { SitePreferencesDialog } from "../SitePreferencesDialog";
 import { ProgressOverlay } from "../util/ProgressOverlay";
@@ -32,7 +18,6 @@ import { GroupDragLayer } from "./GroupDragLayer";
 import { GroupExportDialog } from "./GroupExportDialog";
 import { GroupList } from "./GroupList";
 import { GroupPageOverlayPreview } from "./GroupPageOverlayPreview";
-import { GroupView } from "./GroupView";
 
 // Initialize the pdf.js worker via the appropriate CDN endpoint.
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -45,6 +30,9 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/$
  */
 export function GroupApp() {
     const [environmentLabel, setEnvironmentLabel] = useRecoilState(environmentLabelAtom);
+    const [isPreferencesOpen, setPreferencesOpen] = useState<boolean>(false);
+    const [isExportOpen, setExportOpen] = useState<boolean>(false);
+
     const isImporting = useRecoilValue(isImportingAtom);
 
     const fileActions = useFileActions();
@@ -54,8 +42,8 @@ export function GroupApp() {
             {/* We use a custom drag layer to display custom drag preview images for items. */}
             <GroupDragLayer />
 
-            {/* <SitePreferencesDialog open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} /> */}
-            {/* <GroupExportDialog open={isExportOpen} onClose={() => setExportOpen(false)} /> */}
+            <SitePreferencesDialog open={isPreferencesOpen} onClose={() => setPreferencesOpen(false)} />
+            <GroupExportDialog open={isExportOpen} onClose={() => setExportOpen(false)} />
             <ProgressOverlay open={isImporting} />
             <GroupPageOverlayPreview />
 
@@ -80,13 +68,13 @@ export function GroupApp() {
                             </FormControl>
 
                             <Stack direction="row" spacing={1} height={56}>
-                                {/* <Button
+                                <Button
                                     variant="contained"
                                     startIcon={<DownloadIcon />}
                                     onClick={() => setExportOpen(true)}
                                 >
                                     Export folder
-                                </Button> */}
+                                </Button>
                                 <Button
                                     variant="outlined"
                                     startIcon={<FileUploadIcon />}
@@ -101,11 +89,11 @@ export function GroupApp() {
                             </Stack>
                         </Stack>
                         <Stack alignSelf="flex-end">
-                            {/* <Tooltip title="Settings">
+                            <Tooltip title="Settings">
                                 <IconButton onClick={() => setPreferencesOpen(true)}>
                                     <SettingsIcon />
                                 </IconButton>
-                            </Tooltip> */}
+                            </Tooltip>
                         </Stack>
                     </Stack>
                 </Box>

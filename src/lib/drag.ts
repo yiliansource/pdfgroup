@@ -1,18 +1,9 @@
-import { Page } from "./pdf/group";
-import { PageLocation } from "./pdf/types";
-
 /**
  * Holds information about a currently dragged page.
  */
 export interface PageDragInformation {
-    /**
-     * The location where the dragged page was, before the drag operation started.
-     */
-    location: PageLocation;
-    /**
-     * The underlying page object instance.
-     */
-    page: Page;
+    group: string;
+    page: string;
 }
 
 /**
