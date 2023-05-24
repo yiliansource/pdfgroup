@@ -18,6 +18,8 @@ import { Page } from "../pdf/page";
 import { flattenDocument } from "../pdf/pipes/flattener";
 import { PdfSource } from "../pdf/soure";
 import { PDFPipeMethod } from "../pdf/types";
+import { groupNamePlaceholderSelector } from "../selectors/groupNamePlaceholderSelector";
+import { groupNameSelector } from "../selectors/groupNameSelector";
 import { pageGroupSelector } from "../selectors/pageGroupSelector";
 
 export function usePageActions() {
@@ -151,7 +153,7 @@ export function useFileActions() {
                 );
 
                 const bytes = await piped.save();
-                zip.file(snapshot.getLoadable(groupNameAtom(group)).valueOrThrow() + ".pdf", bytes);
+                zip.file(snapshot.getLoadable(groupNameSelector(group)).valueOrThrow() + ".pdf", bytes);
             }
 
             const content = await zip.generateAsync({ type: "blob" });
