@@ -14,6 +14,10 @@ export interface Settings {
      */
     preferences: {
         /**
+         * The default name to use for groups.
+         */
+        defaultGroupName: string;
+        /**
          * The theme to use, either "dark" or "light".
          */
         theme: PaletteMode;
@@ -39,6 +43,7 @@ const SETTINGS_KEY = "applicationSettings";
 export function getDefaultSettings(isClient: boolean): Settings {
     return {
         preferences: {
+            defaultGroupName: "",
             theme:
                 isClient && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
                     ? "dark"

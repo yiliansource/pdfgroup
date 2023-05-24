@@ -29,6 +29,7 @@ import { groupNameAtom } from "src/lib/atoms/groupNameAtom";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
 import { useGroupActions, usePageActions } from "src/lib/hooks/appActions";
 import { useThemeMode } from "src/lib/hooks/useThemeMode";
+import { groupNamePlaceholderSelector } from "src/lib/selectors/groupNamePlaceholderSelector";
 import { groupPositionSelector } from "src/lib/selectors/groupPositionSelector";
 import { pageCountSelector } from "src/lib/selectors/pageCountSelector";
 
@@ -55,6 +56,7 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
     const [groupName, setGroupName] = useRecoilState(groupNameAtom(group));
     const pageCount = useRecoilValue(pageCountSelector(group));
     const groupPosition = useRecoilValue(groupPositionSelector(group));
+    const placeholder = useRecoilValue(groupNamePlaceholderSelector(group));
 
     const isDarkTheme = useThemeMode() === "dark";
 
@@ -111,7 +113,7 @@ export const GroupView = React.forwardRef<HTMLDivElement, GroupViewProps>(({ gro
                         onChange={(e) => setGroupName(e.target.value)}
                         onKeyDown={handleLabelKeyDown}
                         autoComplete="off"
-                        fullWidth
+                        placeholder={placeholder}
                         InputProps={{
                             endAdornment: <InputAdornment position="end">.pdf</InputAdornment>,
                             sx: {
