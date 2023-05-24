@@ -1,6 +1,6 @@
 {
     "name": "pdfgroup",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "private": true,
     "scripts": {
         "dev": "next dev",
@@ -17,6 +17,7 @@
         "@mui/icons-material": "^5.0.4",
         "@mui/lab": "^5.0.0-alpha.54",
         "@mui/material": "^5.0.2",
+        "array-move": "^4.0.0",
         "chalk": "^5.0.0",
         "clsx": "^1.1.1",
         "file-dialog": "^0.0.8",
@@ -24,6 +25,7 @@
         "immutability-helper": "^3.1.1",
         "jszip": "^3.7.1",
         "next": "12.0.0",
+        "next-intercept-stdout": "^1.0.1",
         "pdf-lib": "^1.17.0",
         "pdfjs-dist": "^2.10.377",
         "react": "17.0.2",
@@ -31,6 +33,7 @@
         "react-dnd-html5-backend": "^14.0.2",
         "react-dnd-touch-backend": "^14.1.1",
         "react-dom": "17.0.2",
+        "recoil": "^0.7.0",
         "uuid": "^8.3.2",
         "yarn": "^1.22.17"
     },

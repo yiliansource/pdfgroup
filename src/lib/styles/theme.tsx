@@ -4,8 +4,9 @@ import { GlobalStyles, PaletteMode, Theme } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
 import { useMemo } from "react";
+import { useRecoilValue } from "recoil";
 
-import { useSettings } from "../hooks/useSettings";
+import { settingsAtom } from "../atoms/settingsAtom";
 
 export function getTheme(mode: PaletteMode): Theme {
     return createTheme({
@@ -53,7 +54,7 @@ export function getTheme(mode: PaletteMode): Theme {
 }
 
 export function ThemeProvider({ children }: React.PropsWithChildren<unknown>) {
-    const { preferences } = useSettings();
+    const { preferences } = useRecoilValue(settingsAtom);
     const theme = useMemo(() => getTheme(preferences.theme), [preferences.theme]);
 
     return (

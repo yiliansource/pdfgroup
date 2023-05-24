@@ -6,7 +6,6 @@ import { useDragDropManager, useDragLayer, XYCoord } from "react-dnd";
 
 import { PREVIEW_PAGE_HEIGHT } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
-import { Page } from "src/lib/pdf/group";
 
 import { PagePreview } from "./PagePreview";
 
@@ -54,7 +53,7 @@ function getItemStyles(offset: XYCoord | null): CSSProperties {
 /**
  * Renders the currently dragged item to a JSX element.
  */
-function renderItem(type: DragItemTypes, item: Page) {
+function renderItem(type: DragItemTypes, item: string) {
     switch (type) {
         case DragItemTypes.PAGE:
             return (

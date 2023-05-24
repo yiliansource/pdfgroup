@@ -2,33 +2,30 @@ import { Stack } from "@mui/material";
 import { Box } from "@mui/system";
 import { useRef, useState } from "react";
 import { useDrop } from "react-dnd";
+import { useRecoilValue } from "recoil";
 
+import { groupPagesAtom } from "src/lib/atoms/groupPagesAtom";
 import { PREVIEW_PAGE_HEIGHT, PREVIEW_PAGE_SPACING, PREVIEW_PAGE_WIDTH } from "src/lib/constants";
 import { DragItemTypes, PageDragInformation } from "src/lib/drag";
-import { useGroupContext } from "src/lib/hooks/useGroupContext";
-import { Page } from "src/lib/pdf/group";
+import { usePageActions } from "src/lib/hooks/appActions";
 
 import { PageItem } from "./PageItem";
 import { PagePlaceholder } from "./PagePlaceholder";
 
 export interface PageListProps {
-    /**
-     * The pages that should be displayed inside the list.
-     */
-    pages: Page[];
-    /**
-     * The index of the group the pages are in.
-     */
-    groupIndex: number;
+    group: string;
 }
 
 /**
  * A list view of all pages inside a group.
  */
-export function PageList({ pages, groupIndex }: PageListProps) {
-    const { movePage } = useGroupContext();
+export function PageList({ group }: PageListProps) {
     const [dropIndex, setDropIndex] = useState(0);
     const listRef = useRef<HTMLDivElement | null>(null);
+
+    const pages = useRecoilValue(groupPagesAtom(group));
+
+    const pageActions = usePageActions();
 
     const [{ isOver, canDrop, item }, drop] = useDrop(
         () => ({
@@ -36,13 +33,7 @@ export function PageList({ pages, groupIndex }: PageListProps) {
             drop: (item: PageDragInformation) => {
                 // We don't render adjacent placeholders, so we need to adjust the drop index, if it's greater
                 // than the actual page index, but only if the item is in the same group.
-                let adjustedDropIndex = dropIndex;
-                if (item.location.group === groupIndex && item.location.page < dropIndex) adjustedDropIndex--;
-
-                movePage(item.location, {
-                    group: groupIndex,
-                    page: adjustedDropIndex,
-                });
+                pageActions.move(item.page, group, dropIndex);
             },
             hover: (_, monitor) => {
                 if (!listRef.current) throw new Error("No reference to the page list was created.");
@@ -60,12 +51,12 @@ export function PageList({ pages, groupIndex }: PageListProps) {
                 setDropIndex(i);
             },
             collect: (monitor) => ({
-                isOver: !!monitor.isOver(),
-                canDrop: !!monitor.canDrop(),
+                isOver: monitor.isOver(),
+                canDrop: monitor.canDrop(),
                 item: monitor.getItem<PageDragInformation>(),
             }),
         }),
-        [groupIndex, dropIndex, pages]
+        [group, dropIndex, pages]
     );
 
     const pageList: JSX.Element[] = [];
@@ -74,25 +65,20 @@ export function PageList({ pages, groupIndex }: PageListProps) {
     // it from the list entirely, always rendering the placeholder index, no matter what.
 
     pages.forEach((page, index) => {
-        if (isOver && canDrop) {
-            if (dropIndex === index) {
-                // Don't render adjacent placeholders.
-                if (
-                    !item ||
-                    item.location.group !== groupIndex ||
-                    !(item.location.page === dropIndex || item.location.page === dropIndex - 1)
-                ) {
-                    pageList.push(getPlaceholder());
-                }
+        if (isOver && canDrop && item && dropIndex === index) {
+            const pageIndex = pages.indexOf(item.page);
+            // Don't render adjacent placeholders.
+            if (!(group === item.group && (index === pageIndex || index === pageIndex + 1))) {
+                pageList.push(getPlaceholder());
             }
         }
 
-        pageList.push(<PageItem key={page.id} page={page} groupIndex={groupIndex} pageIndex={index} />);
+        pageList.push(<PageItem key={page} page={page} group={group} />);
     });
 
     if (isOver && canDrop && dropIndex >= pages.length) {
-        // Since we do not render adjacent placeholders, we check if the last item of the group is the dragged one.
-        if (!item || item.location.group !== groupIndex || item.location.page !== pages.length - 1) {
+        // Since we do not render adjacent placeholders, we check if the last item of the group is not the dragged one.
+        if (!item || item.group !== group || pages.length - 1 !== pages.indexOf(item.page)) {
             pageList.push(getPlaceholder());
         }
     }

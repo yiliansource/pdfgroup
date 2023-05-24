@@ -6,10 +6,11 @@ import React, { useMemo } from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
+import { RecoilRoot } from "recoil";
 
 import { Layout } from "src/components/layout/Layout";
 import { SeoMetas } from "src/components/util/SeoMetas";
-import { SettingsProvider } from "src/lib/hooks/useSettings";
+import { SettingsAtomEffect } from "src/lib/atoms/settingsAtom";
 import createEmotionCache from "src/lib/styles/createEmotionCache";
 import { ThemeProvider } from "src/lib/styles/theme";
 import { isTouch } from "src/lib/supports";
@@ -28,9 +29,11 @@ export default function MyApp({
     const touchBackend = useMemo(() => (!isTouch() ? HTML5Backend : TouchBackend), []);
 
     return (
-        <DndProvider backend={touchBackend}>
-            <CacheProvider value={emotionCache}>
-                <SettingsProvider>
+        <RecoilRoot>
+            <SettingsAtomEffect />
+
+            <DndProvider backend={touchBackend}>
+                <CacheProvider value={emotionCache}>
                     <ThemeProvider>
                         <CssBaseline enableColorScheme />
                         <Layout>
@@ -38,8 +41,8 @@ export default function MyApp({
                             <Component {...pageProps} />
                         </Layout>
                     </ThemeProvider>
-                </SettingsProvider>
-            </CacheProvider>
-        </DndProvider>
+                </CacheProvider>
+            </DndProvider>
+        </RecoilRoot>
     );
 }

@@ -1,7 +1,8 @@
 import { Button, Dialog, DialogActions, DialogTitle, List, ListItem, ListItemText, Switch } from "@mui/material";
 import update from "immutability-helper";
+import { useRecoilState } from "recoil";
 
-import { useSettings } from "src/lib/hooks/useSettings";
+import { settingsAtom } from "src/lib/atoms/settingsAtom";
 
 export interface SitePreferencesDialogProps {
     open: boolean;
@@ -10,7 +11,7 @@ export interface SitePreferencesDialogProps {
 }
 
 export function SitePreferencesDialog({ open, onClose }: SitePreferencesDialogProps) {
-    const { preferences, modifySettings } = useSettings();
+    const [{ preferences }, setSettings] = useRecoilState(settingsAtom);
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -24,8 +25,8 @@ export function SitePreferencesDialog({ open, onClose }: SitePreferencesDialogPr
                     <Switch
                         edge="end"
                         checked={preferences.theme === "dark"}
-                        onChange={(e, c) =>
-                            modifySettings((s) => update(s, { preferences: { theme: { $set: c ? "dark" : "light" } } }))
+                        onChange={(_, c) =>
+                            setSettings((s) => update(s, { preferences: { theme: { $set: c ? "dark" : "light" } } }))
                         }
                     />
                 </ListItem>
