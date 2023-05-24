@@ -18,7 +18,6 @@ import { Page } from "../pdf/page";
 import { flattenDocument } from "../pdf/pipes/flattener";
 import { PdfSource } from "../pdf/soure";
 import { PDFPipeMethod } from "../pdf/types";
-import { groupNamePlaceholderSelector } from "../selectors/groupNamePlaceholderSelector";
 import { groupNameSelector } from "../selectors/groupNameSelector";
 import { pageGroupSelector } from "../selectors/pageGroupSelector";
 
