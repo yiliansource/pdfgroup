@@ -51,8 +51,8 @@ export function PageList({ group }: PageListProps) {
                 setDropIndex(i);
             },
             collect: (monitor) => ({
-                isOver: !!monitor.isOver(),
-                canDrop: !!monitor.canDrop(),
+                isOver: monitor.isOver(),
+                canDrop: monitor.canDrop(),
                 item: monitor.getItem<PageDragInformation>(),
             }),
         }),
@@ -76,9 +76,9 @@ export function PageList({ group }: PageListProps) {
         pageList.push(<PageItem key={page} page={page} group={group} />);
     });
 
-    if (isOver && canDrop && item && dropIndex >= pages.length) {
+    if (isOver && canDrop && dropIndex >= pages.length) {
         // Since we do not render adjacent placeholders, we check if the last item of the group is not the dragged one.
-        if (pages.length - 1 !== pages.indexOf(item.page)) {
+        if (!item || item.group !== group || pages.length - 1 !== pages.indexOf(item.page)) {
             pageList.push(getPlaceholder());
         }
     }
