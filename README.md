@@ -1,37 +1,27 @@
-<h1 align="center">
-    <img src="./public/pdfgroup.svg" width="72" />
-    <br>
-    pdfgroup
-</h1>
+# PdfgroupAngular
 
-<div align="center">
-    <h4>
-        <a href="https://pdfgroup.vercel.app/">
-            <img src="https://img.shields.io/github/deployments/yiliansource/pdfgroup/production?label=vercel&logo=vercel&logoColor=white"/>
-        </a>
-        <a href="https://github.com/yiliansource/pdfgroup/commits/main">
-            <img src="https://img.shields.io/github/last-commit/yiliansource/pdfgroup"/>
-        </a>
-    </h4>
-</div>
+This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 16.1.8.
 
-A modern web application, used to split, organize and group PDF pages into different PDF documents.
+## Development server
 
-Try it out at https://pdfgroup.vercel.app/!
+Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
 
-## Installation & Setup
+## Code scaffolding
 
-```console
-yarn install
-yarn dev
-```
+Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-This will run the application on your localhost. No further setup required!
+## Build
 
-## How it works
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
-The application uses React to provide structure to the interface provided. Under the hood, _pdfjs_ is used for rendering page previews, and _pdf-lib_ is used for document manipulation. Material-UI is used for styling.
+## Running unit tests
 
-## License
+Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-This project is licensed under the [MIT License](./LICENSE).
+## Running end-to-end tests
+
+Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+
+## Further help
+
+To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.

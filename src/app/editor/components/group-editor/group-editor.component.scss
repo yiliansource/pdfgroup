@@ -1,0 +1,19 @@
+@use 'app/shared/theme/main';
+
+.pages {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    min-height: main.$page-height;
+
+    .dragging-source {
+        display: none;
+    }
+
+    .drag-placeholder {
+        display: block;
+        height: main.$page-height;
+        width: main.$page-width;
+        background: lightgray;
+    }
+}

@@ -1,0 +1,30 @@
+<div class='group-header'>
+    <input class='group-name-input' type='text' [ngModel]='name$ | async' (ngModelChange)='changeName($event)' />
+    <button class='remove-group-button' [disabled]="(canRemoveGroup$ | async) === false" (click)="removeGroup()">Remove Group</button>
+    <button class='move-group-up-button' [disabled]='(canMoveGroupUp$ | async) === false' (click)='moveGroupBy(-1)'>Move Up</button>
+    <button class='move-group-down-button' [disabled]='(canMoveGroupDown$ | async) === false' (click)='moveGroupBy(1)'>Move Down</button>
+</div>
+<div
+    class="pages"
+    [dndDropzone]="['PAGE']"
+    dndDragoverClass="dragover"
+    dndEffectAllowed='move'
+    [dndHorizontal]="true"
+    (dndDrop)="onDrop($event)"
+>
+    <pg-page-item
+        *ngFor="let pageIndex of pageIndices$ | async"
+
+        [pageIndex]="pageIndex"
+
+        [dndDraggable]="pageIndex"
+        dndType="PAGE"
+        dndEffectAllowed="move"
+        dndDraggingClass='dragging'
+        dndDraggingSourceClass='dragging-source'
+    ></pg-page-item>
+
+    <div class='drag-placeholder'
+         dndPlaceholderRef>
+    </div>
+</div>

@@ -1,0 +1,9 @@
+@use 'app/shared/theme/main';
+
+:host {
+    display: block;
+    height: main.$page-height;
+    width: main.$page-width;
+    background: gray;
+    user-select: none;
+}

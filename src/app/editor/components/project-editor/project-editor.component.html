@@ -1,0 +1,16 @@
+<div class='editor-header'>
+    <input class='project-name-input' type="text" [ngModel]="name$ | async" (ngModelChange)="changeName($event)" placeholder='Project Name' />
+    <button class='export-folder-button' pg-badge='28'>
+        <span>Export Folder</span>
+    </button>
+    <button class='import-pdf-button'>Import PDF</button>
+    <button class='preferences-button'>Preferences</button>
+</div>
+<div class="groups">
+    <ng-template ngFor let-groupIndex="index" [ngForOf]="groups$ | async">
+        <pg-group-editor [groupIndex]="groupIndex"></pg-group-editor>
+    </ng-template>
+    <div class='add-group-container'>
+        <button class='add-group-button' [disabled]="(canAddGroup$ | async) === false" (click)="addGroup()">Add Group</button>
+    </div>
+</div>
