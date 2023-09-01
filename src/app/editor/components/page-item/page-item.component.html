@@ -1,0 +1,5 @@
+<ng-container *ngIf="page$ | async as page">
+    <div class="content" [style.height.px]="pageHeight$ | async" [style.width.px]="pageWidth$ | async" #content>
+        <pg-pdf-page-preview [page]="page"></pg-pdf-page-preview>
+    </div>
+</ng-container>

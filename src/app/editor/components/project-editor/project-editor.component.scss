@@ -1,5 +1,25 @@
-.groups {
+.editor-header {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 10px;
+
+    .preferences-button {
+        margin: auto 0 auto auto;
+    }
+}
+
+.documents {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 10px;
+}
+
+.add-document-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    border: 1px dashed gray;
 }

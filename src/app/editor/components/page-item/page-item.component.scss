@@ -1,9 +1,5 @@
-@use 'app/shared/theme/main';
-
-:host {
-    display: block;
-    height: main.$page-height;
-    width: main.$page-width;
-    background: gray;
-    user-select: none;
+.content {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 1px 1px 4px rgb(0, 0, 0, 0.2);
 }

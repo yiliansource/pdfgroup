@@ -1,0 +1,46 @@
+@use 'src/app/shared/theme/main';
+
+:host {
+    display: block;
+    padding: 12px;
+    border: 1px solid gray;
+}
+
+.group-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 10px;
+
+    .action-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 6px;
+        margin: auto 0 auto auto;
+    }
+}
+
+.pages {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    height: 100px;
+
+    .dragging-source {
+        display: none;
+    }
+
+    .drag-placeholder-container {
+        display: block;
+        height: 200px;
+        width: 120px;
+
+        .drag-placeholder-background {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: lightgray;
+        }
+    }
+}

@@ -1,0 +1,64 @@
+<div class="group-header">
+    <mat-form-field appearance="outline">
+        <input
+            class="group-name-input"
+            type="text"
+            matInput
+            placeholder="Group Name"
+            [style.font-size.px]="12"
+            [ngModel]="name$ | async"
+            (ngModelChange)="changeName($event)"
+        />
+        <span matTextSuffix>.pdf</span>
+    </mat-form-field>
+
+    <div class="action-buttons">
+        <button
+            class="remove-group-button"
+            mat-icon-button
+            [disabled]="(canRemoveDocument$ | async) === false"
+            (click)="removeGroup()"
+        >
+            <mat-icon>delete</mat-icon>
+        </button>
+        <button
+            class="move-group-up-button"
+            mat-icon-button
+            [disabled]="(canMoveDocumentUp$ | async) === false"
+            (click)="moveDocumentBy(-1)"
+        >
+            <mat-icon>arrow_upward</mat-icon>
+        </button>
+        <button
+            class="move-group-down-button"
+            mat-icon-button
+            [disabled]="(canMoveDocumentDown | async) === false"
+            (click)="moveDocumentBy(1)"
+        >
+            <mat-icon>arrow_downward</mat-icon>
+        </button>
+    </div>
+</div>
+<div
+    class="pages"
+    [style.height.px]="pageListHeight$ | async"
+    [dndDropzone]="allowedDropTypes"
+    dndDragoverClass="dragover"
+    dndEffectAllowed="move"
+    [dndHorizontal]="true"
+    (dndDrop)="onDrop($event)"
+>
+    <pg-page-item
+        *ngFor="let item of pageCollection$ | async; trackBy: trackPageBy"
+        [pageIndex]="item.index"
+        [dndDraggable]="item.index"
+        [dndType]="pageDropType"
+        dndEffectAllowed="move"
+        dndDraggingClass="dragging"
+        dndDraggingSourceClass="dragging-source"
+    ></pg-page-item>
+
+    <div class="drag-placeholder-container" dndPlaceholderRef>
+        <div class="drag-placeholder-background"></div>
+    </div>
+</div>

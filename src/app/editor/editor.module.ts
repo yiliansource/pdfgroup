@@ -1,36 +1,49 @@
-import { NgModule } from '@angular/core';
+import { CdkMenuModule } from '@angular/cdk/menu';
 import { CommonModule } from '@angular/common';
-import { DndModule } from 'ngx-drag-drop';
+import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LoggingModule } from '@pdfgroup/logging/logging.module';
-import { EditorStatePersistor } from '@pdfgroup/editor/store/editor-state.persistor';
-import { EditorStateQuery } from '@pdfgroup/editor/store/editor-state.query';
-import { EditorStateStore } from '@pdfgroup/editor/store/editor-state.store';
-import { AddGroupAction } from '@pdfgroup/editor/actions/add-group.action';
-import { AddPageToGroupAction } from '@pdfgroup/editor/actions/add-page-to-group.action';
-import { DeletePageAction } from '@pdfgroup/editor/actions/delete-page.action';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { DndModule } from 'ngx-drag-drop';
+
+import { AddDocumentAction } from '@pdfgroup/editor/actions/add-document.action';
+import { ImportFileAction } from '@pdfgroup/editor/actions/import-file.action';
+import { MoveDocumentAction } from '@pdfgroup/editor/actions/move-document.action';
 import { MovePageAction } from '@pdfgroup/editor/actions/move-page.action';
-import { MoveGroupAction } from '@pdfgroup/editor/actions/move-group.action';
-import { RemoveGroupAction } from '@pdfgroup/editor/actions/remove-group.action';
-import { ProjectEditorComponent } from '@pdfgroup/editor/components/project-editor/project-editor.component';
-import { GroupEditorComponent } from '@pdfgroup/editor/components/group-editor/group-editor.component';
+import { RemoveDocumentAction } from '@pdfgroup/editor/actions/remove-document.action';
+import { RemovePageAction } from '@pdfgroup/editor/actions/remove-page.action';
+import { DocumentEditorComponent } from '@pdfgroup/editor/components/document-editor/document-editor.component';
 import { PageItemComponent } from '@pdfgroup/editor/components/page-item/page-item.component';
-import { ComponentsModule } from '@pdfgroup/core/components/components.module';
+import { ProjectEditorComponent } from '@pdfgroup/editor/components/project-editor/project-editor.component';
+import { LoggingModule } from '@pdfgroup/logging/logging.module';
+import { PreviewModule } from '@pdfgroup/preview/preview.module';
 
 @NgModule({
-    imports: [CommonModule, ComponentsModule, FormsModule, DndModule, LoggingModule],
-    providers: [
-        EditorStatePersistor,
-        EditorStateQuery,
-        EditorStateStore,
-        AddGroupAction,
-        AddPageToGroupAction,
-        DeletePageAction,
-        MovePageAction,
-        MoveGroupAction,
-        RemoveGroupAction,
+    imports: [
+        CommonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatBadgeModule,
+        MatButtonModule,
+        MatIconModule,
+        CdkMenuModule,
+        FormsModule,
+        DndModule,
+        LoggingModule,
+        PreviewModule,
     ],
-    declarations: [ProjectEditorComponent, GroupEditorComponent, PageItemComponent],
+    providers: [
+        ImportFileAction,
+        AddDocumentAction,
+        RemovePageAction,
+        MovePageAction,
+        MoveDocumentAction,
+        RemoveDocumentAction,
+    ],
+    declarations: [ProjectEditorComponent, DocumentEditorComponent, PageItemComponent],
     exports: [ProjectEditorComponent],
 })
 export class EditorModule {}

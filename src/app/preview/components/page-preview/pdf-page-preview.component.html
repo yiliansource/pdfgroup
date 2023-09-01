@@ -1,0 +1,5 @@
+<ngx-skeleton-loader
+    *ngIf="(hasPreview$ | async) === false"
+    [theme]="{ height: '100%', width: '100%' }"
+></ngx-skeleton-loader>
+<canvas class="preview-canvas" [style.visibility]="(hasPreview$ | async) ? 'visible' : 'hidden'"></canvas>

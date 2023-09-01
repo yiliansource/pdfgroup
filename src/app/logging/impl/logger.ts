@@ -1,9 +1,11 @@
-import { LogLevel } from '../model/log-level';
-import { LogEvent } from '../model/log-event';
-import { LogMarker } from '../model/log-marker';
-import { NAMED_LOGGER_SYMBOL } from '../decorators/named-logger';
 import { Injectable } from '@angular/core';
+
 import { assertUnreachable } from '@pdfgroup/shared/util/assert';
+
+import { NAMED_LOGGER_SYMBOL } from '../decorators/named-logger';
+import { LogEvent } from '../model/log-event';
+import { LogLevel } from '../model/log-level';
+import { LogMarker } from '../model/log-marker';
 
 @Injectable()
 export class Logger {
@@ -50,6 +52,7 @@ export class Logger {
     }
 
     private getLoggerMarker(context: unknown): LogMarker {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data: LogMarker | undefined = (context as any)?.[NAMED_LOGGER_SYMBOL];
         if (data !== undefined) {
             return {

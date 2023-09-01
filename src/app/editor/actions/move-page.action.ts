@@ -1,28 +1,29 @@
-import { Observable } from 'rxjs';
-import { applyTransaction } from '@datorama/akita';
 import { Injectable } from '@angular/core';
+import { applyTransaction } from '@datorama/akita';
+import { Observable, map } from 'rxjs';
+
+import { Action } from '@pdfgroup/editor/actions/action';
+import { ProjectPersistor } from '@pdfgroup/editor/stores/project/project.persistor';
+import { ProjectQuery } from '@pdfgroup/editor/stores/project/project.query';
+import { VirtualPageIndex } from '@pdfgroup/editor/util/virtual-page-index';
 import { NamedLogger } from '@pdfgroup/logging/decorators/named-logger';
-import { PdfProjectPersistor } from '@pdfgroup/editor/store/pdf-project/pdf-project.persistor';
-import { PageIndex } from '@pdfgroup/pdf/model/page-index';
-import { PdfProjectQuery } from '@pdfgroup/editor/store/pdf-project/pdf-project.query';
-import { mapIsDefined } from '@pdfgroup/shared/util/operators';
-import { EntityAction } from '@pdfgroup/editor/actions/action';
+import { isDefined } from '@pdfgroup/shared/util/is-defined';
 
 @Injectable()
 @NamedLogger('MovePageAction')
-export class MovePageAction implements EntityAction<PageIndex, PageIndex> {
+export class MovePageAction implements Action<VirtualPageIndex, VirtualPageIndex> {
     public constructor(
-        private readonly pdfProjectQuery: PdfProjectQuery,
-        private readonly pdfProjectPersistor: PdfProjectPersistor
+        private readonly pdfProjectQuery: ProjectQuery,
+        private readonly pdfProjectPersistor: ProjectPersistor
     ) {}
 
-    public produceCanExecute$(index: PageIndex): Observable<boolean> {
-        return this.pdfProjectQuery.page(index).pipe(mapIsDefined());
+    public produceCanExecute$(sourceIndex: VirtualPageIndex): Observable<boolean> {
+        return this.pdfProjectQuery.page(sourceIndex).pipe(map(isDefined));
     }
 
-    public async execute(srcIndex: PageIndex, dstIndex: PageIndex): Promise<void> {
+    public async execute(sourceIndex: VirtualPageIndex, destinationIndex: VirtualPageIndex): Promise<void> {
         applyTransaction(() => {
-            this.pdfProjectPersistor.movePage(srcIndex, dstIndex);
+            this.pdfProjectPersistor.movePage(sourceIndex, destinationIndex);
         });
     }
 }

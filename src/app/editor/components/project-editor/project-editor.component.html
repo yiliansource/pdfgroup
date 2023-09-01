@@ -1,16 +1,52 @@
-<div class='editor-header'>
-    <input class='project-name-input' type="text" [ngModel]="name$ | async" (ngModelChange)="changeName($event)" placeholder='Project Name' />
-    <button class='export-folder-button' pg-badge='28'>
-        <span>Export Folder</span>
+<div class="editor-header">
+    <mat-form-field appearance="outline">
+        <input
+            class="project-name-input"
+            type="text"
+            matInput
+            placeholder="Project Name"
+            [ngModel]="name$ | async"
+            (ngModelChange)="changeName($event)"
+        />
+    </mat-form-field>
+    <button
+        class="export-folder-button"
+        mat-flat-button
+        color="primary"
+        (click)="handleExport()"
+        [matBadge]="exportBadgeContent$ | async"
+        matBadgePosition="above after"
+        matBadgeColor="warn"
+    >
+        {{ 'APP.EXPORT' | translate }}
+        Export Folder
     </button>
-    <button class='import-pdf-button'>Import PDF</button>
-    <button class='preferences-button'>Preferences</button>
+    <button class="import-pdf-button" mat-flat-button color="primary" (click)="handleImport()">Import PDF</button>
+    <button class="preferences-button" mat-icon-button disabled>
+        <mat-icon>settings</mat-icon>
+    </button>
 </div>
-<div class="groups">
-    <ng-template ngFor let-groupIndex="index" [ngForOf]="groups$ | async">
-        <pg-group-editor [groupIndex]="groupIndex"></pg-group-editor>
-    </ng-template>
-    <div class='add-group-container'>
-        <button class='add-group-button' [disabled]="(canAddGroup$ | async) === false" (click)="addGroup()">Add Group</button>
+<div class="documents">
+    <pg-document-editor
+        *ngFor="let item of documentCollection$ | async; trackBy: trackDocumentBy"
+        [documentIndex]="item.index"
+    ></pg-document-editor>
+    <div
+        class="add-document-container"
+        dndDropzone
+        dndDragoverClass="dragover"
+        dndEffectAllowed="move"
+        [dndAllowExternal]="true"
+        (dndDrop)="dropIntoNewGroup($event)"
+    >
+        <button
+            class="add-document-button"
+            mat-icon-button
+            [disabled]="(canAddDocument$ | async) === false"
+            (click)="addDocument()"
+        >
+            <mat-icon>add</mat-icon>
+        </button>
+        <span>Drop entire PDFs or pages here to create a new document!</span>
     </div>
 </div>
